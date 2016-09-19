@@ -1,0 +1,6 @@
+{
+  "sendGridAPIKey": "sendGridAPIKey",
+  "pushoverUser": "pushoverUser",
+  "pushoverToken": "pushoverToken",
+  "hostURL": "hostURL"
+}

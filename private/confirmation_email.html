@@ -1,0 +1,17 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="viewport" content="width=device-width" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Confirmation email</title>
+  <link href="styles.css" media="all" rel="stylesheet" type="text/css" />
+</head>
+
+<body itemscope itemtype="http://schema.org/EmailMessage">
+
+  <p>Hello,</p>
+  <p>Thank you for subscribing to our email list! To complete the process, simply click on the link below:</p>
+  <p><a href='{{host}}confirm?s={{subscriberId}}'>Confirm your subscription</a></p>
+  <p>Cheers,<br>{{name}}<br>{{brand}}</p>
+
+</body>
+</html>

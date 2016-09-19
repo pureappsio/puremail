@@ -1,0 +1,30 @@
+<template name='listDetails'>
+
+<div class='row'>
+
+  <div class='col-md-4'>{{name}}</div>
+  <div class='col-md-2'>
+    <a href='{{pathFor "listSubscribers"}}' class='btn btn-success btn-block'>Subscribers</a>
+  </div>
+  <div class='col-md-1'>
+    <a href='{{pathFor "list"}}' class='btn btn-warning btn-block'>Settings</a>
+  </div>
+  <div class='col-md-1'>
+    <a href='{{pathFor "listImport"}}' class='btn btn-default btn-block'>Import</a>
+  </div>
+  <div class='col-md-2'>
+    <a href='{{pathFor "listAutomation"}}' class='btn btn-primary btn-block'>Automation</a>
+  </div>
+  <div class='col-md-1'>
+    <a href='{{pathFor "listStatistics"}}' class='btn btn-info btn-block'>Statistics</a>
+  </div>
+  <div class='col-md-1'>
+    <button class='btn btn-danger btn-block delete'>Delete</button>
+  </div>
+
+   {{> deleteConfirm data=this }}
+
+</div>
+
+
+</template>

@@ -1,0 +1,17 @@
+<template name="layout">
+
+  {{> header}}
+
+  <div id="main" class="container-fluid">
+    <!-- {{#if currentUser}} -->
+	    {{> yield}}
+    <!-- {{else}}
+      <div class='row'>
+        <div class='col-md-3'></div>
+        <div class='col-md-6 col-centered'>Welcome to OpenMailr!</div>
+        <div class='col-md-3'></div>
+      </div>
+    {{/if}} -->
+  </div>
+
+</template>

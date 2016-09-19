@@ -1,0 +1,28 @@
+<template name='lists'>
+
+<h3>Lists</h3>
+
+<div class='row'>
+
+  <div class='col-md-8'><input type='text' class='form-control' id='list-name' placeholder='List name ...'></div>
+  <div class='col-md-4'><button class='btn btn-primary btn-block' id='new-list'>Create New List</button></div>
+
+</div>
+
+<div class='voffset30'></div>
+
+{{#each lists}}
+  {{> listDetails}}
+{{/each}}
+
+<div class='voffset50'></div>
+
+<div class='row'>
+
+  <div class='col-md-4'>
+      <a href='{{pathFor "combineLists"}}' class='btn btn-default btn-block'>Combine Lists</a>
+  </div>
+
+</div>
+
+</template>

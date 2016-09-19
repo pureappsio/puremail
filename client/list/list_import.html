@@ -1,0 +1,33 @@
+<template name='listImport'>
+
+<h3>Import Email List (Sendy)</h3>
+
+  <div class='row'>
+    <div class='col-md-2'>Interests:</div>
+    <div class='col-md-10'>
+      {{#each interests}}
+        {{> interestChoice}}
+      {{/each}}
+    </div>
+  </div>
+
+  <div class='row'>
+    <div class='col-md-2'>Origin:</div>
+    <div class='col-md-10'>
+      <label class='label-space'>
+        <input class='origin' id='blog' type="checkbox"> Blog
+      </label>
+      <label class='label-space'>
+        <input class='origin' id='amazon' type="checkbox"> Amazon
+      </label>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3"><input class='form-control' type="file" id="files" name="files[]" multiple />
+    <output id="list"></output>
+  </div>
+  </div>
+
+
+</template>

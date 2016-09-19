@@ -1,0 +1,71 @@
+<template name='broadcast'>
+
+<h3>Broadcast Emails</h3>
+
+{{> filters}}
+
+<div class='row'>
+
+  <div class='col-md-2'>Pick a date & time:</div>
+  <div class='col-md-1'>
+    <input type='text' id='day' class="form-control">
+  </div>
+  <div class='col-md-1'>
+    <input type='text' id='month' class="form-control">
+  </div>
+
+  <div class='col-md-1'>
+    <input type='text' id='hour' class="form-control">
+  </div>
+  <div class='col-md-1'>
+    <input type='text' id='minute' class="form-control">
+  </div>
+
+</div>
+
+<div class='row voffset60'>
+
+  <div class='col-md-6'>
+    <input type='text' id='email-subject' placeholder="Email subject ..." class="form-control">
+  </div>
+  <!-- <div class='col-md-3'><select id='select-product-offer' class="form-control"></select></div>
+  <div class='col-md-2'><input type='text' id='discount' value='10' class="form-control"></div>
+  <div class='col-md-1'><button id='offer' class='btn btn-primary btn-block'>Offer</button></div> -->
+</div>
+
+<div class='row' >
+  <div class='col-md-6'>
+    <div id="email-text"></div>
+  </div>
+  <div class='col-md-4'>
+    <input type='text' id='test-to' placeholder="Test email ..." class="form-control">
+  </div>
+  <div class='col-md-2'><button id='test-email' class='btn btn-primary btn-block'>Send Test Email</button></div>
+</div>
+
+<div class='row'>
+  <div class='col-md-3'>
+    {{#if noUserData}}
+      <button id='send-email' class='btn btn-primary btn-block btn-lg disabled'>Send to subscribers</button>
+    {{else}}
+      <button id='send-email' class='btn btn-primary btn-block btn-lg'>Send to subscribers</button>
+    {{/if}}
+  </div>
+</div>
+
+<h3>Past Broadcast Emails</h3>
+
+<div class='row row-title'>
+
+  <div class='col-md-5'>Subject</div>
+  <div class='col-md-2'>Sent</div>
+  <div class='col-md-2'>Opened</div>
+  <div class='col-md-2'>Clicked</div>
+
+</div>
+
+{{#each broadcasts}}
+  {{> broadcastDetails}}
+{{/each}}
+
+</template>

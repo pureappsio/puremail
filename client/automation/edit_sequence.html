@@ -1,0 +1,131 @@
+<template name='editSequence'>
+
+  <h3>Update Sequence</h3>
+
+  <div class='row'>
+
+    <div class='col-md-2'>
+      Sequence name:
+    </div>
+    <div class='col-md-4'>
+      <input type='text' id='sequence-name' placeholder="Sequence name ..." class="form-control">
+    </div>
+    <div class='col-md-2'>
+      Thank You Page:
+    </div>
+    <div class='col-md-4'>
+      <input type='text' id='sequence-thank-you' class="form-control">
+    </div>
+  </div>
+
+  <div class='row'>
+
+    <div class='col-md-2'>For people who</div>
+    <div class='col-md-2'>
+      <select id='list-criteria' class="form-control">
+        <option value='subscribed'>subscribed to</option>
+        <!-- <option value='bought'>bought</option> -->
+      </select>
+    </div>
+
+    <div class='col-md-2'>
+      <select id='sequence-list' class="form-control">
+
+      </select>
+    </div>
+
+    <div class='col-md-2'>and are</div>
+
+    <div class='col-md-4'>
+      <select id='sequence-trigger' class="form-control">
+        <option value='new'>new subscribers</option>
+        <option value='subscribers'>already subscribers</option>
+        <option value='customers'>new customers</option>
+        <option value='dying'>dying leads (> 60 days inactive)</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div class='row'>
+
+    <div class='col-md-2'>And</div>
+    <div class='col-md-2'>
+      <select id='interest-criteria' class="form-control">
+      	<option value='interested'>are interested in</option>
+      </select>
+    </div>
+
+    <div class='col-md-2'>
+      <select id='interest-parameter' class="form-control">
+        <option value='anything'>anything</option>
+        {{#each interests}}
+          {{> interestOption}}
+        {{/each}}
+      </select>
+    </div>
+
+    <div class='col-md-2'>and</div>
+    <div class='col-md-2'>
+      <select id='origin-criteria' class="form-control">
+      	<option value='origin'>are coming from</option>
+      </select>
+    </div>
+
+    <div class='col-md-2'>
+      <select id='origin-parameter' class="form-control">
+        <option value='anywhere'>anywhere</option>
+        <option value='blog'>blog</option>
+        <option value='amazon'>amazon</option>
+        <option value='landing'>landing page</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div class='row'>
+
+    <div class='col-md-2'>After for people</div>
+
+    <div class='col-md-2'>
+      <select id='end-criteria' class="form-control">
+        <option value='interested'>are interested in</option>
+      </select>
+    </div>
+
+    <div class='col-md-2'>
+      <select id='end-parameter' class="form-control">
+      </select>
+    </div>
+
+    <div class='col-md-2'>then</div>
+
+    <div class='col-md-2'>
+      <select id='end-action' class="form-control">
+        <option value='end'>end there</option>
+        <option value='go'>go to sequence</option>
+      </select>
+    </div>
+
+    <div class='col-md-2'>
+      <select id='end-destination' class="form-control">
+      </select>
+    </div>
+
+  </div>
+
+  <div id='additional-destinations'></div>
+
+  <div class='row'>
+    <div class='col-md-4'>
+      <button id='add-destination' class='btn btn-primary btn-block'>Add Destination</button>
+    </div>
+    <div class='col-md-4'>
+      <button id='save-sequence' class='btn btn-success btn-block'>Update Sequence</button>
+    </div>
+    <div class='col-md-4'>
+      <a href='/lists/{{listId}}/automation' class='btn btn-warning btn-block'>Come Back</a>
+    </div>
+  </div>
+
+</template>

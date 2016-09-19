@@ -1,0 +1,29 @@
+<template name='scheduled'>
+
+  <h3>Scheduled Emails</h3>
+
+  <div class='row'>
+
+    <div class='col-md-3'><button class='btn btn-danger' id='clear-broadcast'>Clear</button></div>
+    <div class='col-md-3'>Scheduled: {{nbScheduled}}</div>
+
+    <div class='col-md-3'><input type='text' id='sequence-id' class="form-control"></div>
+    <div class='col-md-3'><button class='btn btn-danger' id='clear-sequence'>Clear Sequence ID</button></div>
+
+  </div>
+
+  <div class='row row-title'>
+
+    <div class='col-md-3'>To</div>
+    <div class='col-md-2'>List</div>
+    <div class='col-md-2'>Sequence</div>
+    <div class='col-md-2'>Email</div>
+    <div class='col-md-2'>Time</div>
+
+  </div>
+
+  {{#each getScheduled}}
+    {{> scheduledEmail}}
+  {{/each}}
+
+</template>

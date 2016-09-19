@@ -1,0 +1,51 @@
+<template name='generator'>
+
+<h3>Opt-in Generator</h3>
+
+<div class='row'>
+  <div class='col-md-2'>List:</div>
+  <div class='col-md-10'>
+    <select class='form-control' id='list-select'>
+    {{#each lists}}
+      {{> listChoice}}
+    {{/each}}
+  </select>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-2'>Interests:</div>
+  <div class='col-md-10'>
+    {{#each interests}}
+      {{> interestChoice}}
+    {{/each}}
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-2'>Origin:</div>
+  <div class='col-md-10'>
+    <label class='label-space'>
+      <input class='origin' id='blog' type="checkbox"> Blog
+    </label>
+    <label class='label-space'>
+      <input class='origin' id='amazon' type="checkbox"> Amazon
+    </label>
+  </div>
+</div>
+
+<div class='row'>
+  <div class='col-md-2'></div>
+  <div class='col-md-8'>You can now just copy & paste the code below:</div>
+  <div class='col-md-2'></div>
+</div>
+
+<div class='row'>
+  <div class='col-md-2'></div>
+  <div class='col-md-8 gray'>{{emailTemplate}}</div>
+  <div class='col-md-2'></div>
+</div>
+
+
+
+</template>

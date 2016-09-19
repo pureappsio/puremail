@@ -1,0 +1,35 @@
+<template name='sequence'>
+
+  <div class='row'>
+
+    <div class='col-md-2'>
+      {{_id}}
+    </div>
+
+    <div class='col-md-3'>
+      <a href='{{pathFor "sequenceDetails"}}'>{{name}}</a>
+    </div>
+
+    <div class='col-md-1'>
+      {{emails}} emails
+    </div>
+
+    <div class='col-md-1'>
+      {{getDestination}}
+    </div>
+
+    <div class='col-md-2'>
+      <a href='{{pathFor "editSequenceEmails"}}' class='btn btn-block btn-primary'>Edit Emails</a>
+    </div>
+
+    <div class='col-md-2'>
+      <a href='{{pathFor "editSequence"}}' class='btn btn-block btn-warning'>Edit Sequence</a>
+    </div>
+
+    <div class='col-md-1'>
+      <button class='btn btn-block btn-danger delete-sequence label-space'>Delete</button>
+    </div>
+
+  </div>
+
+</template>

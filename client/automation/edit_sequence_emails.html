@@ -1,0 +1,112 @@
+<template name='editSequenceEmails'>
+
+  <h3>Emails in the sequence: {{name}}</h3>
+
+    {{#each getRules}}
+      {{> rule}}
+    {{/each}}
+
+    <div class='row voffset30'>
+      <div class='col-md-3'></div>
+      <div class='col-md-6'>
+        <a href='/lists/{{listId}}/automation' class='btn btn-warning btn-block'>Come Back</a>
+      </div>
+      <div class='col-md-3'></div>
+    </div>
+
+  <h3>Add new email:</h3>
+
+  <div class='row voffset30'>
+    <div class='col-md-2'></div>
+      <div class='col-md-4'>
+        <input type='text' id='email-name' placeholder="Email name ..." class="form-control">
+      </div>
+    <div class='col-md-4'>
+      <input type='text' id='email-subject' placeholder="Email subject ..." class="form-control">
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row' >
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <input type="text" id='email-text' name="name" class="summernote" />
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row' >
+
+  <div class='col-md-2'></div>
+  <div class='col-md-2'>Send email after</div>
+  <div class='col-md-3'>
+    <select id='select-time' class="form-control">
+    	<option value='1'>1</option>
+      <option value='2'>2</option>
+      <option value='3'>3</option>
+      <option value='4'>4</option>
+      <option value='5'>5</option>
+      <option value='6'>6</option>
+      <option value='7'>7</option>
+      <option value='8'>8</option>
+      <option value='9'>9</option>
+      <option value='10'>10</option>
+      <option value='11'>11</option>
+      <option value='12'>12</option>
+      <option value='13'>13</option>
+      <option value='14'>14</option>
+      <option value='15'>15</option>
+      <option value='16'>16</option>
+      <option value='17'>17</option>
+      <option value='18'>18</option>
+      <option value='19'>19</option>
+      <option value='20'>20</option>
+    </select>
+  </div>
+
+  <div class='col-md-3'>
+    <select id='select-period' class="form-control">
+    	<option value='minutes'>minutes</option>
+      <option value='hours'>hours</option>
+      <option value='days'>days</option>
+    </select>
+  </div>
+
+  </div>
+
+  <div class='row'>
+
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <button id='add-condition' class='btn btn-default btn-block'>Add Condition</button>
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div id='conditions'></div>
+  <div id='destination'></div>
+
+  <div class='row'>
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      {{#if noUserData}}
+        <button id='save-email' class='btn btn-lg btn-primary btn-block disabled'>Save Email</button>
+      {{else}}
+        <button id='save-email' class='btn btn-lg btn-primary btn-block'>Save Email</button>
+      {{/if}}
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row'>
+    <div class='col-md-2'></div>
+    <div class='col-md-5'>
+      <input type='text' id='test-to' placeholder="Test email ..." class="form-control">
+    </div>
+    <div class='col-md-3'><button id='test-email' class='btn btn-default btn-block'>Send test email</button></div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row voffset30'></div>
+
+</template>

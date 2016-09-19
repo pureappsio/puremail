@@ -1,0 +1,19 @@
+<template name='listStatistics'>
+
+<h3>Statistics for list: {{name}}</h3>
+
+<div class='row row-title'>
+
+  <div class='col-md-1'>Sequence</div>
+  <div class='col-md-3'>Email Subject</div>
+  <div class='col-md-2 col-centered'>Delivered</div>
+  <div class='col-md-2 col-centered'>Opened</div>
+  <div class='col-md-2 col-centered'>Clicked</div>
+
+</div>
+
+{{#each getRules}}
+  {{> ruleStatistics}}
+{{/each}}
+
+</template>
