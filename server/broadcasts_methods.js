@@ -250,6 +250,33 @@ Meteor.methods({
 
       }
 
+      if (criteria == 'plan') {
+
+        addSubscriberArray[f] = false;
+
+        if (option == 'yes') {
+
+          if (currentSubscriber.plan) {
+            addSubscriberArray[f] = true;
+          }
+          else {
+            addSubscriberArray[f] = false;
+          }
+
+        }
+        if (option == 'no') {
+
+          if (currentSubscriber.plan) {
+            addSubscriberArray[f] = false;
+          }
+          else {
+            addSubscriberArray[f] = true;
+          }
+
+        }
+
+      }
+
       }
 
       addSubscriber = true;

@@ -1,5 +1,61 @@
 Template.automation.events({
 
+  'change #end-criteria': function() {
+
+    // Get selection
+    var criteria = $('#end-criteria :selected').val();
+
+    // Clear
+    $('#end-parameter').find('option').remove().end();
+
+    // Set options accordingly
+    if (criteria == 'interested') {
+
+      // Fill
+      var interests = Interests.find({listId: listId}).fetch();
+
+      // Set options
+      $('#end-parameter').append($('<option>', {
+        value: 'anything',
+        text: 'anything'
+      }));
+      for (i in interests) {
+        $('#end-parameter').append($('<option>', {
+          value: interests[i]._id,
+          text: interests[i].name
+        }));
+      }
+
+    }
+    if (criteria == 'are') {
+
+      $('#end-parameter').append($('<option>', {
+        value: 'new',
+        text: 'new subscribers'
+      }));
+
+      $('#end-parameter').append($('<option>', {
+        value: 'returning',
+        text: 'returning subscribers'
+      }));
+
+    }
+
+    if (criteria == 'origin') {
+
+      $('#end-parameter').append($('<option>', {
+        value: 'blog',
+        text: 'blog'
+      }));
+
+      $('#end-parameter').append($('<option>', {
+        value: 'landing',
+        text: 'landing page'
+      }));
+
+    }
+
+  },
   'click #test-email': function () {
 
     // Get email text & subject
@@ -50,6 +106,69 @@ Template.automation.events({
         }));
       }
     }
+  },
+  'click #add-type-destination': function () {
+
+    // Build additional element
+    var element = "";
+
+    element += "<div class='row'>";
+    element += "<div class='col-md-2'></div>";
+
+    element += "<div class='col-md-2'><select id='end-criteria-" + destinationIndex + "' class='form-control'>";
+    element += "<option value='are'>are</option>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'>";
+    element += "<select id='end-parameter-" + destinationIndex + "' class='form-control'>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'>then</div>";
+
+    element += "<div class='col-md-2'>";
+    element += "<select id='end-action-" + destinationIndex + "' class='form-control'>";
+    element += "<option value='end'>end there</option>";
+    element += "<option value='go'>go to sequence</option>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'><select id='end-destination-" + destinationIndex + "' class='form-control'>"
+    element += "</select></div>";
+
+    element += "</div>";
+
+    // Append
+    $('#additional-destinations').append(element);
+
+    // Fill
+    var interests = Interests.find({listId: this._id}).fetch();
+
+    $('#end-parameter-' + destinationIndex).append($('<option>', {
+        value: 'new',
+        text: 'new subscribers'
+      }));
+
+    $('#end-parameter-' + destinationIndex).append($('<option>', {
+      value: 'returning',
+      text: 'returning subscribers'
+    }));
+
+    // Get sequences
+    var sequences = Sequences.find({listId: this._id}).fetch();
+
+    // Remove
+    $('#end-destination-' + destinationIndex).find('option').remove().end();
+
+    // Add all
+    for (i in sequences) {
+      $('#end-destination-' + destinationIndex).append($('<option>', {
+        value: sequences[i]._id,
+        text: sequences[i].name
+      }));
+    }
+
+    // Increase index
+    destinationIndex++
+
   },
   'click #add-destination': function () {
 
@@ -120,6 +239,70 @@ Template.automation.events({
     destinationIndex++
 
   },
+  'click #add-origin-destination': function () {
+
+    // Build additional element
+    var element = "";
+
+    element += "<div class='row'>";
+    element += "<div class='col-md-2'></div>";
+
+    element += "<div class='col-md-2'><select id='end-criteria-" + destinationIndex + "' class='form-control'>";
+    element += "<option value='origin'>coming from</option>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'>";
+    element += "<select id='end-parameter-" + destinationIndex + "' class='form-control'>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'>then</div>";
+
+    element += "<div class='col-md-2'>";
+    element += "<select id='end-action-" + destinationIndex + "' class='form-control'>";
+    element += "<option value='end'>end there</option>";
+    element += "<option value='go'>go to sequence</option>";
+    element += "</select></div>";
+
+    element += "<div class='col-md-2'><select id='end-destination-" + destinationIndex + "' class='form-control'>"
+    element += "</select></div>";
+
+    element += "</div>";
+
+    // Append
+    $('#additional-destinations').append(element);
+
+    // Remove
+    $('#end-parameter-' + destinationIndex).find('option').remove().end();
+
+    // Set options
+    $('#end-parameter-' + destinationIndex).append($('<option>', {
+      value: 'blog',
+      text: 'blog'
+    }));
+
+     $('#end-parameter-' + destinationIndex).append($('<option>', {
+      value: 'landing',
+      text: 'landing page'
+     }));
+    
+    // Get sequences
+    var sequences = Sequences.find({listId: this._id}).fetch();
+
+    // Remove
+    $('#end-destination-' + destinationIndex).find('option').remove().end();
+
+    // Add all
+    for (i in sequences) {
+      $('#end-destination-' + destinationIndex).append($('<option>', {
+        value: sequences[i]._id,
+        text: sequences[i].name
+      }));
+    }
+
+    // Increase index
+    destinationIndex++
+
+  },
   'click #save-sequence': function () {
 
     // Get sequence data
@@ -170,6 +353,23 @@ Template.automation.events({
     // Save sequence
     Meteor.call('saveSequence', sequence);
 
+  },
+   'click #save-email': function () {
+
+    // Get sequence data
+    var email = {
+      subject: $('#email-subject').val(),
+      text: $('#email-text').summernote('code'),
+      trigger: $('#email-trigger :selected').val(),
+      parameter: $('#email-parameter :selected').val(),
+      time: $('#select-time :selected').val(),
+      period: $('#select-period :selected').val(),
+      listId: this._id,
+      ownerId: Meteor.user()._id
+    };
+
+    // Save
+    Meteor.call('saveConditionalEmail', email);
   }
 
 });
@@ -194,6 +394,9 @@ Template.automation.helpers({
     else {
       return Sequences.find({});
     }
+  },
+  conditionalEmails: function() {
+    return ConditionalEmails.find({listId: this._id});
   }
 
 });
@@ -222,6 +425,20 @@ Template.automation.rendered = function() {
   if (this.data) {
     listId = this.data._id;
     Tracker.autorun(function() {
+
+      // Get products
+      var products = Products.find({listId: listId}).fetch();
+
+      // Remove
+      $('#email-parameter').find('option').remove().end();
+
+      // Set options
+      for (i in products) {
+        $('#email-parameter').append($('<option>', {
+          value: products[i].name,
+          text: products[i].name
+        }));
+      }
 
       // Fill
       var interests = Interests.find({listId: listId}).fetch();

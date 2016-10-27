@@ -12,4 +12,6 @@ Tracker.autorun(function() {
     Meteor.subscribe('userProducts');
     Meteor.subscribe('userGumroad');
     Meteor.subscribe('userIntegrations');
+    Meteor.subscribe('userConditionalEmails');
+    Meteor.subscribe('userStats');
 });

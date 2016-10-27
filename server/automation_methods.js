@@ -4,6 +4,24 @@ const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
 Meteor.methods({
 
+  updateConditionalEmail: function(email) {
+
+    // Edit 
+    ConditionalEmails.update(email._id, {$set: email});
+
+  },
+  saveConditionalEmail: function(email) {
+
+    // Save 
+    console.log(email);
+    ConditionalEmails.insert(email);
+
+  },
+  deleteConditionalEmail: function(emailId) {
+
+    ConditionalEmails.remove(emailId);
+
+  },
   changeEmailOrder: function(email, orderChange) {
 
     // Change by default
@@ -79,8 +97,8 @@ Meteor.methods({
 
     if (scheduled) {
 
-      // console.log('Scheduled message: ')
-      // console.log(scheduled);
+      console.log('Scheduled message: ')
+      console.log(scheduled);
 
       var currentDate = new Date();
       currentDate = currentDate.getTime();
@@ -91,7 +109,45 @@ Meteor.methods({
       // console.log('User: ')
       // console.log(user);
 
-      if (scheduled.type == 'broadcast') {
+      if (scheduled.type == 'simple') {
+
+        if ((currentDate - scheduledDate) > 0) {
+
+          // Build mail
+          var helper = sendgridModule.mail;
+          from_email = new helper.Email(scheduled.fromEmail);
+          to_email = new helper.Email(scheduled.to);
+          subject = scheduled.subject;
+          content = new helper.Content("text/html", scheduled.text);
+          mail = new helper.Mail(from_email, subject, to_email, content);
+
+          mail.from_email.name = scheduled.from;
+
+          // Send
+          var requestBody = mail.toJSON()
+          var request = sendgrid.emptyRequest()
+          request.method = 'POST'
+          request.path = '/v3/mail/send'
+          request.body = requestBody
+
+          if (Meteor.settings.mode != 'demo') {
+            sendgrid.API(request, function (err, response) {
+
+              console.log('Email sent');
+
+              if (err) {console.log(err);}
+            
+            });
+
+          }
+
+          // Remove
+          Scheduled.remove(scheduled._id);
+
+        }
+
+      }
+      else if (scheduled.type == 'broadcast') {
 
          if ((currentDate - scheduledDate) > 0) {
 
@@ -102,12 +158,7 @@ Meteor.methods({
           allRecipients = Meteor.call('filterSubscribers', scheduled.listId, scheduled.filters);
 
           // Get host
-          if (process.env.ROOT_URL == "http://localhost:3000/") {
-            host = process.env.ROOT_URL;
-          }
-          else {
-            host = "http://" + Meteor.settings.hostURL + "/";
-          }
+          host = Meteor.absoluteUrl();
 
           // Add unsubscribe data
           if (list.language) {
@@ -182,11 +233,14 @@ Meteor.methods({
             request.method = 'POST'
             request.path = '/v3/mail/send'
             request.body = requestBody
+
+            if (Meteor.settings.mode != 'demo') {
             sendgrid.API(request, function (err, response) {
               if (response.statusCode != 202) {
                 console.log(response.body);
               }
             });
+          }
 
           }
 
@@ -216,12 +270,7 @@ Meteor.methods({
           SSR.compileTemplate('automationEmail', Assets.getText('automation_email.html'));
 
           // Get host
-          if (process.env.ROOT_URL == "http://localhost:3000/") {
-            host = process.env.ROOT_URL;
-          }
-          else {
-            host = "http://" + Meteor.settings.hostURL + "/";
-          }
+          host = Meteor.absoluteUrl();
 
           // Add unsubscribe data
           if (list.language) {
@@ -277,6 +326,23 @@ Meteor.methods({
               mail.addCustomArg(custom_arg);
             }
 
+            // Add Google Analytics data
+            tracking_settings = new helper.TrackingSettings()
+            if (subscriber.origin) {
+              if (subscriber.origin == 'landing') {
+                source = "facebook";
+              }
+              if (subscriber.origin == 'blog') {
+                source = "blog";
+              }
+            }
+            else {
+              source = "blog";
+            }
+            ganalytics = new helper.Ganalytics(true, source, "email");
+            tracking_settings.setGanalytics(ganalytics)
+            mail.addTrackingSettings(tracking_settings)
+
             // Send
             var requestBody = mail.toJSON()
             console.log(requestBody);
@@ -284,12 +350,16 @@ Meteor.methods({
             request.method = 'POST'
             request.path = '/v3/mail/send'
             request.body = requestBody
-            sendgrid.API(request, function (err, response) {
-              if (response.statusCode != 202) {
-                console.log(response.body);
-              }
-            });
 
+            // Send
+            if (Meteor.settings.mode != 'demo') {
+              sendgrid.API(request, function (err, response) {
+                if (response.statusCode != 202) {
+                  console.log(response.body);
+                }
+              });
+            }
+          
             // Remove
             Scheduled.remove(scheduled._id);
 
@@ -430,22 +500,36 @@ Meteor.methods({
                   console.log('Destinations: ');
                   console.log(destinations);
 
-                  console.log("Subscriber interests: ");
-                  console.log(subscriber.interests);
-
                   // Match subscriber with destination
                   var matchIndex = -1;
                   for (d = 0; d < destinations.length; d++) {
 
-                    for (k = 0; k < subscriber.interests.length; k++) {
+                    if (destinations[d].criteria == 'interested') {
 
-                      if (subscriber.interests[k]._id == destinations[d].parameter) {
-                        matchIndex = d;
-                        break;
+                       console.log('Checking interests');
+
+                       for (k = 0; k < subscriber.interests.length; k++) {
+
+                        if (subscriber.interests[k]._id == destinations[d].parameter) {
+                          matchIndex = d;
+                          break;
+                        }
+                        if (matchIndex != -1) {break;}
                       }
+
+                    }
+
+                    if (destinations[d].criteria == 'are') {
+
+                      console.log('Checking status');
+                      console.log(subscriber.status);
+
+                      if (destinations[d].parameter == subscriber.status) {
+                        matchIndex = d;
+                      }
+                      
                     }
                     if (matchIndex != -1) {break;}
-
                   }
 
                   // Apply action

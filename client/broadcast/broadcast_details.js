@@ -1,16 +1,18 @@
 Template.broadcastDetails.helpers({
 
   getOpened: function() {
-    if (this.opened) {
-      return ((this.opened/this.recipients)*100).toFixed(2);
+    var opened = Stats.find({broadcastId: this._id, event: 'opened'}).fetch().length;
+    if (opened != 0) {
+      return ((opened/this.recipients)*100).toFixed(2);
     }
     else {
       return 0;
     }
   },
   getClicked: function() {
-    if (this.clicked) {
-      return ((this.clicked/this.recipients)*100).toFixed(2);
+    var clicked = Stats.find({broadcastId: this._id, event: 'clicked'}).fetch().length;
+    if (clicked != 0) {
+      return ((clicked/this.recipients)*100).toFixed(2);
     }
     else {
       return 0;

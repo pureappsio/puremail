@@ -1,5 +1,21 @@
 Meteor.methods({
 
+  getProductName: function(productId) {
+
+    // Get integration
+    if (Integrations.findOne({type: 'purecart'})) {
+
+      // Get integration
+      var integration = Integrations.findOne({type: 'purecart'});
+
+      // Get product
+      var url = "http://" + integration.url + "/api/products?key=" + integration.key;
+      var answer = HTTP.get(url + '&product=' + productId);
+      return answer.data.product;
+
+    }
+
+  },
   refreshProducts: function(products, integration) {
 
     // Get list

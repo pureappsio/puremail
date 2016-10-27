@@ -1,13 +1,13 @@
-SyncedCron.add({
-  name: 'Refresh EDD data',
-  schedule: function(parser) {
-    // parser is a later.parse object
-    return parser.text('every 1 hours on the 45th minute');
-  },
-  job: function() {
-    Meteor.call('refreshAllEdd');
-  }
-});
+// SyncedCron.add({
+//   name: 'Refresh EDD data',
+//   schedule: function(parser) {
+//     // parser is a later.parse object
+//     return parser.text('every 1 hours on the 45th minute');
+//   },
+//   job: function() {
+//     Meteor.call('refreshAllEdd');
+//   }
+// });
 
 SyncedCron.add({
   name: 'Send scheduled emails',
@@ -24,7 +24,7 @@ SyncedCron.add({
   name: 'Delete not-confirmed subscribers',
   schedule: function(parser) {
     // parser is a later.parse object
-    return parser.text('every 10 hours');
+    return parser.text('every 1 day');
   },
   job: function() {
     Meteor.call('clearNotConfirmed');

@@ -1,9 +1,59 @@
 Meteor.methods({
 
+  getMode: function() {
+
+    if (Meteor.settings.mode) {
+      if (Meteor.settings.mode == 'demo') {
+        return 'demo';
+      }
+      else {
+        return 'live';
+      }
+    }
+    else {
+      return 'live';
+    }
+
+  },
+  validateApiKey: function(user, key) {
+
+    if (user.apiKey == key) {
+      return true;
+    }
+    else {
+      return false;
+    }
+
+  },
+  generateApiKey: function() {
+
+    // Check if key exist
+    if (!Meteor.user().apiKey) {
+      
+      // Generate key
+      var key = "";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      for( var i=0; i < 16; i++ ) {
+        key += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      console.log(key);
+
+      // Update user
+      Meteor.users.update(Meteor.user()._id, {$set: {apiKey: key}});
+    }
+
+  },
   setLanguage: function(listId, language) {
 
     // Update language
     Lists.update(listId, {$set: {language: language}});
+    
+  },
+  setConfirmationEmail: function(listId, skipConfirmation) {
+
+    // Update confirmation skip
+    Lists.update(listId, {$set: {skipConfirmation: skipConfirmation}});
     
   },
   addInterest: function(listId, interestName) {

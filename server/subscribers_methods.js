@@ -169,12 +169,16 @@ Meteor.methods({
       console.log(list);
 
       // Send notifications
-      parameters = {
-        token: Meteor.settings.pushoverToken,
-        user: Meteor.settings.pushoverUser,
-        message: 'New subscriber to the ' + list.name + ' email list'
-      };
-      HTTP.post('https://api.pushover.net/1/messages.json', {params: parameters});
+      if (Meteor.settings.pushoverToken && Meteor.settings.pushoverUser) {
+
+        parameters = {
+          token: Meteor.settings.pushoverToken,
+          user: Meteor.settings.pushoverUser,
+          message: 'New subscriber to the ' + list.name + ' email list'
+        };
+        HTTP.post('https://api.pushover.net/1/messages.json', {params: parameters});
+
+      }
 
       // Assign subscriber in sequence
       if (subscriber.sequenceId) {
@@ -198,6 +202,9 @@ Meteor.methods({
     var currentDate = new Date();
     currentDate = currentDate.getTime();
 
+    if (rule.period == 'seconds') {
+      currentDate += rule.time * 1000;
+    }
     if (rule.period == 'minutes') {
       currentDate += rule.time * 1000 * 60;
     }
@@ -295,30 +302,39 @@ Meteor.methods({
 
       // Fuse interests
       if (subscriber.interests) {
-
+         
         // Get all interests
         var previousInterests = Subscribers.findOne(isSubscriber._id).interests;
         var newInterests = subscriber.interests;
 
-        // Combine
-        var interests = newInterests;
+        if (previousInterests && newInterests) {
 
-        for (p = 0; p < previousInterests.length; p++) {
-          var matchInterest = false;
-          for (n = 0; n < newInterests.length; n++) {
+          // Combine
+          var interests = newInterests;
 
-            if (previousInterests[p]._id == newInterests[n]._id) {
-              matchInterest = true;
+          for (p = 0; p < previousInterests.length; p++) {
+            var matchInterest = false;
+            for (n = 0; n < newInterests.length; n++) {
+
+              if (previousInterests[p] && newInterests[n]) {
+
+                if (previousInterests[p]._id == newInterests[n]._id) {
+                  matchInterest = true;
+                }
+
+              }
+
             }
+            if (!matchInterest) {
+              interests.push(previousInterests[p]);
+            }
+          }
 
-          }
-          if (!matchInterest) {
-            interests.push(previousInterests[p]);
-          }
+          // Update
+          Subscribers.update(isSubscriber._id, {$set: {"interests": interests} });
+
         }
 
-        // Update
-        Subscribers.update(isSubscriber._id, {$set: {"interests": interests} });
       }
 
       // Origin and date
@@ -327,46 +343,114 @@ Meteor.methods({
       }
       Subscribers.update(isSubscriber._id, {$set: {"last_updated": new Date() } });
 
+      // Assign returning status
+      Subscribers.update(isSubscriber._id, {$set: {"status": "returning" } });
+
       // Assign to new sequence ?
       if (isSubscriber.sequenceId == null) {
 
-        // Check for sequence for existing subscriber
-        var sequences = Sequences.find({listId: isSubscriber.listId, trigger: 'subscribers'}).fetch();
-        var sequenceMatch = false;
+        // Assign new sequence
+        if (subscriber.sequenceId) {
 
-        for (i = 0; i < subscriber.interests.length; i++) {
+          Subscribers.update(isSubscriber._id, {$set: {"sequenceId": subscriber.sequenceId } });
+       
+          // Get first email of sequence
+          var firstEmail = Automations.findOne({sequenceId: subscriber.sequenceId, order: 1});
 
-          for (s = 0; s < sequences.length; s++) {
+          // Set email
+          Subscribers.update(isSubscriber._id, {$set: {"sequenceEmail": firstEmail._id } });
 
-            if (sequences[s].interest == subscriber.interests[i].name) {
-
-              // Match sequence
-              sequenceMatch = true;
-              sequenceIndex = s;
-
-            }
-
-          }
+          // Add email to scheduler
+          Meteor.call('addAutomationEmail', firstEmail, isSubscriber, list, user);
 
         }
 
-        // If we found a sequence
-        if (sequenceMatch) {
+        // // Check for sequence for existing subscriber
+        // var sequences = Sequences.find({listId: isSubscriber.listId, trigger: 'subscribers'}).fetch();
+        // var sequenceMatch = false;
+
+        // for (i = 0; i < subscriber.interests.length; i++) {
+
+        //   for (s = 0; s < sequences.length; s++) {
+
+        //     if (sequences[s].interest == subscriber.interests[i].name) {
+
+        //       // Match sequence
+        //       sequenceMatch = true;
+        //       sequenceIndex = s;
+
+        //     }
+
+        //   }
+
+        // }
+
+        // // If we found a sequence
+        // if (sequenceMatch) {
+
+        //   // Get sequence
+        //   var sequence = sequences[sequenceIndex];
+
+        //   // Assign to user
+        //   Subscribers.update(isSubscriber._id, {$set: {"sequenceId": sequence._id } });
+
+        //   // Get first email
+        //   var branchEmail = Automations.findOne({sequenceId: sequence._id, order: 1});
+
+        //   // Assign email
+        //   Subscribers.update(isSubscriber._id, {$set: {"sequenceEmail": branchEmail._id } });
+
+        //   // Add to scheduler
+        //   Meteor.call('addAutomationEmail', branchEmail, isSubscriber, list, user);
+
+        // }
+
+      }
+
+      else {
+
+        // Just send first email of new sequence
+        if (subscriber.sequenceId) {
 
           // Get sequence
-          var sequence = sequences[sequenceIndex];
-
-          // Assign to user
-          Subscribers.update(isSubscriber._id, {$set: {"sequenceId": sequence._id } });
+          var sequence = Sequences.findOne(subscriber.sequenceId);
 
           // Get first email
-          var branchEmail = Automations.findOne({sequenceId: sequence._id, order: 1});
+          var firstEmail = Automations.findOne({sequenceId: sequence._id, order: 1});
 
-          // Assign email
-          Subscribers.update(isSubscriber._id, {$set: {"sequenceEmail": branchEmail._id } });
+          // Calculate date
+          var currentDate = new Date();
+          currentDate = currentDate.getTime();
 
-          // Add to scheduler
-          Meteor.call('addAutomationEmail', branchEmail, isSubscriber, list, user);
+          if (firstEmail.period == 'seconds') {
+            currentDate += firstEmail.time * 1000;
+          }
+
+          if (firstEmail.period == 'minutes') {
+            currentDate += firstEmail.time * 1000 * 60;
+          }
+          if (firstEmail.period == 'hours') {
+            currentDate += firstEmail.time * 1000 * 60 * 60;
+          }
+          if (firstEmail.period == 'days') {
+            currentDate += firstEmail.time * 1000 * 60 * 60 * 24;
+          }
+
+          var entryDate = new Date(currentDate);
+
+          // Add first email to scheduler
+          var entry = {
+            name: firstEmail.emailSubject,
+            ownerId: user._id,
+            date: entryDate,
+            to: subscriber.email,
+            from: list.userName + ' <' + list.brandEmail +'>',
+            subject: firstEmail.emailSubject,
+            text: firstEmail.emailText,
+            listId: subscriber.listId
+          }
+          console.log(entry);
+          Scheduled.insert(entry);
 
         }
 
@@ -379,13 +463,29 @@ Meteor.methods({
 
       // Set not confirmed
       subscriber.confirmed = false;
+      subscriber.status = 'new';
       console.log('New subscriber: ');
       console.log(subscriber);
 
       // Insert
       var subscriberId = Subscribers.insert(subscriber);
 
-      if (data.confirmed) {
+      // Insert in stats
+      var stat = {
+        date: new Date(),
+        subscriberId: subscriberId,
+        ownerId: user._id,
+        event: 'subscribed'
+      }
+      if (subscriber.sequenceId) {
+        stat.sequenceId = subscriber.sequenceId;
+      }
+      if (subscriber.origin) {
+        stat.origin = subscriber.origin;
+      }
+      Stats.insert(stat);
+
+      if (data.confirmed || (list.skipConfirmation == 'enabled')) {
 
         console.log('Skipping confirmation email');
 
@@ -394,14 +494,24 @@ Meteor.methods({
       else {
 
         // Send confirmation email
-        SSR.compileTemplate('confirmationEmail', Assets.getText('confirmation_email.html'));
+        if (list.language) {
 
-        if (process.env.ROOT_URL == "http://localhost:3000/") {
-          host = process.env.ROOT_URL;
+          if (list.language == 'fr') {
+            var confirmationSubject = "Confirmez votre inscription à " + list.brandName;
+            SSR.compileTemplate('confirmationEmail', Assets.getText('confirmation_email_fr.html'));
+          }
+          else {
+            var confirmationSubject = "Confirm your subscription to " + list.brandName;
+            SSR.compileTemplate('confirmationEmail', Assets.getText('confirmation_email_.html'));
+          }
         }
         else {
-          host = "http://" + Meteor.settings.hostURL + "/";
+          var confirmationSubject = "Confirm your subscription to " + list.brandName;
+          SSR.compileTemplate('confirmationEmail', Assets.getText('confirmation_email.html'));
         }
+        
+        // Host
+        host = Meteor.absoluteUrl();
 
         // Set name & brand
         name = list.userName;
@@ -414,7 +524,7 @@ Meteor.methods({
         var helper = sendgridModule.mail;
         from_email = new helper.Email(list.brandEmail);
         to_email = new helper.Email(subscriber.email);
-        subject = "Confirm your subscription to " + list.brandName;
+        subject = confirmationSubject;
         content = new helper.Content("text/html", SSR.render("confirmationEmail", {host: host, name: name, brand: brand, subscriberId: subscriberId}));
         mail = new helper.Mail(from_email, subject, to_email, content);
         mail.from_email.name = list.userName;
@@ -425,11 +535,15 @@ Meteor.methods({
         request.method = 'POST';
         request.path = '/v3/mail/send';
         request.body = requestBody;
+
+        if (Meteor.settings.mode != 'demo') {
         sendgrid.API(request, function (err, response) {
           if (response.statusCode != 202) {
             console.log(response.body);
           }
         });
+
+        }
 
       }
 
@@ -476,15 +590,14 @@ Meteor.methods({
     if (data.origin) {
       subscriber.origin = data.origin;
     }
-    if (data.nb_products) {
-      subscriber.nb_products = data.nb_products;
+    if (data.plan) {
+      subscriber.plan = data.plan;
     }
-    if (data.products) {
-      products = [];
-      for (p = 0; p < data.products.length; p++) {
-        products.push({"name": data.products[p]});
-      }
-      subscriber.products = products;
+    if (data.product) {
+      // for (p = 0; p < data.products.length; p++) {
+      //   products.push({"name": data.products[p]});
+      // }
+      subscriber.products = [data.product];
     }
 
     // Set dates
@@ -496,24 +609,36 @@ Meteor.methods({
     subscriber.ownerId = user._id;
 
     // Check if already in list
-    var isSubscriber = Subscribers.find({email: data.email, listId: data.list, ownerId: user._id}).fetch();
+    var isSubscriber = Subscribers.findOne({email: data.email, listId: data.list, ownerId: user._id});
 
-    if (isSubscriber.length > 0) {
+    if (isSubscriber) {
 
       console.log('Updating subscriber');
       console.log(subscriber);
 
+      var existingSubscriber = Subscribers.findOne({email: data.email, listId: data.list, ownerId: user._id});
+
       if (subscriber.interests) {
-        Subscribers.update({email: data.email, listId: data.list, ownerId: user._id}, {$set: {"interests": subscriber.interests} });
+        Subscribers.update(existingSubscriber._id, {$set: {"interests": subscriber.interests} });
       }
-      if (subscriber.nb_products) {
-        Subscribers.update({email: data.email, listId: data.list, ownerId: user._id}, {$set: {"nb_products": subscriber.nb_products} });
-      }
-      if (subscriber.products) {
-        Subscribers.update({email: data.email, listId: data.list, ownerId: user._id}, {$set: {"products": subscriber.products} });
+      if (subscriber.product) {
+
+        // Get current product
+        var existingProducts = existingSubscriber.products;
+
+        if (existingProducts.indexOf(subscriber.product) == -1) {
+          existingProducts.push(subscriber.product);
+        }
+
+        // Refresh
+        Subscribers.update(existingSubscriber._id, {$set: {"products": existingProducts} });
+
       }
       if (subscriber.origin) {
-        Subscribers.update({email: data.email, listId: data.list, ownerId: user._id}, {$set: {"origin": subscriber.origin } });
+        Subscribers.update(existingSubscriber._id, {$set: {"origin": subscriber.origin } });
+      }
+      if (subscriber.plan) {
+        Subscribers.update(existingSubscriber._id, {$set: {"plan": subscriber.plan } });
       }
       // Subscribers.update({email: data.email, listId: data.list, ownerId: user._id}, {$set: {"last_updated": new Date() } });
     }

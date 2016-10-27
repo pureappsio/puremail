@@ -44,8 +44,16 @@ if(Meteor.isServer) {
 		return Broadcasts.find({ownerId: this.userId});
 	});
 
+	Meteor.publish("userStats", function () {
+		return Stats.find({ownerId: this.userId});
+	});
+
 	Meteor.publish("userIntegrations", function () {
 		return Integrations.find({ownerId: this.userId});
+	});
+
+	Meteor.publish("userConditionalEmails", function () {
+		return ConditionalEmails.find({ownerId: this.userId});
 	});
 
 }

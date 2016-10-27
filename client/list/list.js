@@ -51,6 +51,11 @@ Template.list.events({
     Meteor.call('setLanguage', this._id, $('#language :selected').val());
 
   },
+  'click #set-confirmation': function () {
+
+    Meteor.call('setConfirmationEmail', this._id, $('#confirmation :selected').val());
+
+  },
   'click #set-email': function () {
 
     Meteor.call('setEmailPreferences', this._id, $('#signup-thank-you').val(), $('#final-thank-you').val(), $('#unsubscribe').val());

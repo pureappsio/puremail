@@ -90,6 +90,8 @@
   <div class='col-md-2'>
     <select id='end-criteria' class="form-control">
       <option value='interested'>are interested in</option>
+      <option value='are'>are</option>
+      <option value='origin'>coming from</option>
     </select>
   </div>
 
@@ -120,11 +122,17 @@
 </div>
 
 <div class='row'>
-  <div class='col-md-4'></div>
-  <div class='col-md-4'>
-      <button id='add-destination' class='btn btn-warning btn-block'>Add Destination</button>
+  <div class='col-md-3'></div>
+  <div class='col-md-2'>
+      <button id='add-destination' class='btn btn-warning btn-block'>Add Interest Branching</button>
   </div>
-  <div class='col-md-4'></div>
+  <div class='col-md-2'>
+      <button id='add-type-destination' class='btn btn-warning btn-block'>Add Type Branching</button>
+  </div>
+  <div class='col-md-2'>
+      <button id='add-origin-destination' class='btn btn-warning btn-block'>Add Origin Branching</button>
+  </div>
+  <div class='col-md-3'></div>
 </div>
 
 <div class='row'>
@@ -143,6 +151,95 @@
 
 {{#each sequences}}
   {{> sequence}}
+{{/each}}
+
+<h3>Create New Conditional Email</h3>
+
+<div class='row'>
+  <div class='col-md-2'></div>
+  <div class='col-md-2'>
+    Send email if
+  </div>
+  <div class='col-md-3'>
+    <select id='email-trigger' class="form-control">
+      <option value='bought'>just bought</option>
+    </select>
+  </div>
+
+  <div class='col-md-3'>
+    <select id='email-parameter' class="form-control">
+    </select>
+  </div>
+  
+</div>
+
+ <div class='row' >
+
+  <div class='col-md-2'></div>
+  <div class='col-md-2'>Send email after</div>
+  <div class='col-md-3'>
+    <select id='select-time' class="form-control">
+      <option value='1'>1</option>
+      <option value='2'>2</option>
+      <option value='3'>3</option>
+      <option value='4'>4</option>
+      <option value='5'>5</option>
+      <option value='6'>6</option>
+      <option value='7'>7</option>
+      <option value='8'>8</option>
+      <option value='9'>9</option>
+      <option value='10'>10</option>
+      <option value='11'>11</option>
+      <option value='12'>12</option>
+      <option value='13'>13</option>
+      <option value='14'>14</option>
+      <option value='15'>15</option>
+      <option value='16'>16</option>
+      <option value='17'>17</option>
+      <option value='18'>18</option>
+      <option value='19'>19</option>
+      <option value='20'>20</option>
+    </select>
+  </div>
+
+  <div class='col-md-3'>
+    <select id='select-period' class="form-control">
+      <option value='seconds'>seconds</option>
+      <option value='minutes'>minutes</option>
+      <option value='hours'>hours</option>
+      <option value='days'>days</option>
+    </select>
+  </div>
+
+  </div>
+
+<div class='row voffset30'>
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <input type='text' id='email-subject' placeholder="Email subject ..." class="form-control">
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row' >
+    <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <input type="text" id='email-text' name="name" class="summernote" />
+    </div>
+    <div class='col-md-2'></div>
+  </div>
+
+  <div class='row' >
+  <div class='col-md-2'></div>
+    <div class='col-md-8'>
+      <button id='save-email' class='btn btn-primary btn-block'>Save Email</button>
+    </div>
+  </div>
+
+<h3>Your Conditional Emails</h3>
+
+{{#each conditionalEmails}}
+  {{> conditionalEmail}}
 {{/each}}
 
 </template>

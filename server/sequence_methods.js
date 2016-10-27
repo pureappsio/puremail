@@ -1,5 +1,17 @@
 Meteor.methods({
 
+  moveNextEmail: function(subscriberId) {
+
+    // Get subscriber
+    var subscriber = Subscribers.findOne(subscriberId);
+
+    // Find next scheduled email
+    var email = Scheduled.findOne({to: subscriber.email, listId: subscriber.listId});
+
+    // Update
+    Scheduled.update(email._id, {$set: {date: new Date()}});
+
+  },
   saveSequence: function(sequence) {
 
     // Save
@@ -22,7 +34,7 @@ Meteor.methods({
     Sequences.remove(id);
 
   },
-  assignSequence: function(subscriberId, sequenceId) {
+  assignSequenceManual: function(subscriberId, sequenceId) {
 
     if (sequenceId != 'none') {
 
@@ -123,7 +135,7 @@ Meteor.methods({
     }
 
     // Push array in Scheduled
-    Scheduled.batchInsert(entries);
+    // Scheduled.batchInsert(entries);
     var endTime = new Date();
     console.log('Time to assign sequence to subscribers: ' + (endTime.getTime() - startTime.getTime() ) + ' ms' );
 

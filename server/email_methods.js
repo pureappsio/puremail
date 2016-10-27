@@ -1,9 +1,33 @@
+
 // Import SendGrid
 import sendgridModule from 'sendgrid';
 const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
 Meteor.methods({
 
+  addManualEmail: function(emailData) {
+
+    // Get list
+    var list = Lists.findOne(emailData.listId);
+
+    // Build entry
+    var entry = {
+      name: list.userName,
+      ownerId: emailData.userId,
+      listId: emailData.listId,
+      date: new Date(emailData.date),
+      to: emailData.email,
+      fromEmail: list.brandEmail,
+      from: list.userName,
+      subject: emailData.subject,
+      text: emailData.text,
+      type: 'simple'
+    }
+
+    // Insert
+    Scheduled.insert(entry);
+
+  },
   cleanScheduled: function() {
 
     // Remove all broadcast emails
@@ -53,12 +77,7 @@ Meteor.methods({
     console.log('For list: ' + listId);
 
     // Get host
-    if (process.env.ROOT_URL == "http://localhost:3000/") {
-      host = process.env.ROOT_URL;
-    }
-    else {
-      host = "http://" + Meteor.settings.hostURL + "/";
-    }
+    host = Meteor.absoluteUrl();
 
     // Add unsubscribe data
     testEmailData.html += "<p><a style='color: gray;' href='" + host + "unsubscribe?s='>Unsubscribe</a></p>";
@@ -87,11 +106,15 @@ Meteor.methods({
     request.method = 'POST'
     request.path = '/v3/mail/send'
     request.body = requestBody
+
+    if (Meteor.settings.mode != 'demo') {
     sendgrid.API(request, function (err, response) {
       if (response.statusCode != 202) {
         console.log(response.body);
       }
     });
+
+    }
 
   }
 });

@@ -154,6 +154,20 @@ Template.filters.events({
 
     }
 
+    if (criteria == 'plan') {
+
+      $('#select-option-' + index).append($('<option>', {
+        value: 'yes',
+        text: "yes"
+      }));
+
+      $('#select-option-' + index).append($('<option>', {
+        value: 'no',
+        text: "no"
+      }));
+
+    }
+
   },
   'click #plus-filter': function () {
 
@@ -175,6 +189,7 @@ Template.filters.events({
     newFilter += "<option value='notboughtproduct'>didn't buy</option>";
     newFilter += "<option value='are'>are</option>";
     newFilter += "<option value='interested'>are interested in</option>";
+    newFilter += "<option value='plan'>are in a plan</option>";
     newFilter += "</select></div>";
     newFilter += '<div class="col-md-3"><select id="select-option-' + index + '" class="form-control"></select></div></div>';
 

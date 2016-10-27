@@ -1,19 +1,29 @@
 Template.settings.events({
 
-  'click #add-edd-account': function () {
+  'click #add-integration': function () {
 
     var accountData = {
-      token: $('#edd-token').val(),
-      key: $('#edd-key').val(),
-      url: $('#edd-url').val(),
-      list: $('#select-list :selected').val(),
+      type: $('#integration-type :selected').val(),
+      key: $('#integration-key').val(),
+      url: $('#integration-url').val(),
+      ownerId: Meteor.user()._id
     };
-    Meteor.call('addEddAccount', accountData);
+    Meteor.call('addIntegration', accountData);
 
   },
-  'click #refresh-edd': function () {
+  'click #refresh-integrations': function () {
 
-    Meteor.call('refreshAllEdd');
+    Meteor.call('refreshAllIntegrations');
+
+  },
+  'click #generate-key': function () {
+
+    Meteor.call('generateApiKey');
+
+  },
+  'click #link-list': function() {
+
+    Meteor.call('linkList', $('#integration-id :selected').val(), $('#list-id :selected').val());
 
   }
 
@@ -24,22 +34,45 @@ Template.settings.helpers({
 
   integrations: function() {
     return Integrations.find({});
+  },
+  key: function() {
+    return Meteor.user().apiKey;
+  },
+  areIntegrations: function() {
+    if (Integrations.find({}).fetch().length > 0) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
 });
 
 Template.settings.rendered = function() {
 
-
   // Get lists
   var lists = Lists.find({}).fetch();
 
   // Set options
   for (i in lists) {
-    $('#select-list').append($('<option>', {
+    $('#list-id').append($('<option>', {
       value: lists[i]._id,
       text: lists[i].name
     }));
   }
+
+  // Get integrations
+  Meteor.call('getIntegrations', function(err, integrations) {
+
+    // Set options
+    for (i in integrations) {
+      $('#integration-id').append($('<option>', {
+        value: integrations[i]._id,
+        text: integrations[i].url
+      }));
+    }
+
+  });
 
 };

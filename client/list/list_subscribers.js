@@ -7,14 +7,14 @@ Template.listSubscribers.helpers({
     if (Session.get('subscriberSearch')) {
 
       if (Session.get('subscriberSearch') == 'all') {
-        return Subscribers.find({listId: this._id}, {sort: {last_updated: -1}, limit : 25});
+        return Subscribers.find({listId: this._id}, {sort: {date_added: -1}, limit : 25});
       }
       else {
         return Subscribers.find({listId: this._id, email: Session.get('subscriberSearch')});
       }
     }
     else {
-      return Subscribers.find({listId: this._id}, {sort: {last_updated: -1}, limit : 25});
+      return Subscribers.find({listId: this._id}, {sort: {date_added: -1}, limit : 25});
     }
 
   },

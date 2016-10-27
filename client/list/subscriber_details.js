@@ -24,7 +24,13 @@ Template.subscriberDetails.events({
     var sequence = $('#sequences :selected').val();
 
     // Assign subscriber
-    Meteor.call('assignSequence', this._id, sequence);
+    Meteor.call('assignSequenceManual', this._id, sequence);
+
+  },
+  'click #move-sequence': function() {
+
+    // Assign subscriber
+    Meteor.call('moveNextEmail', this._id);
 
   }
 
@@ -32,6 +38,12 @@ Template.subscriberDetails.events({
 
 Template.subscriberDetails.helpers({
 
+  nb_products: function() {
+    return this.products.length;
+  },
+  // productName: function() {
+  //   return Meteor.call('getProductName', this.product)
+  // }
   interests: function() {
 
     console.log(this);
@@ -42,32 +54,20 @@ Template.subscriberDetails.helpers({
   },
   numberDelivered: function() {
 
-    if (this.delivered) {
-      return this.delivered;
-    }
-    else {
-      return 0;
-    }
-
+    var delivered = Stats.find({subscriberId: this._id, event: 'delivered'}).fetch().length;
+    return delivered;
+ 
   },
   numberOpened: function() {
 
-    if (this.opened) {
-      return this.opened;
-    }
-    else {
-      return 0;
-    }
+    var opened = Stats.find({subscriberId: this._id, event: 'opened'}).fetch().length;
+    return opened;
 
   },
   numberClicked: function() {
 
-    if (this.clicked) {
-      return this.clicked;
-    }
-    else {
-      return 0;
-    }
+    var clicked = Stats.find({subscriberId: this._id, event: 'clicked'}).fetch().length;
+    return clicked;
 
   },
   sequenceName: function() {

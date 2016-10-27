@@ -1,9 +1,28 @@
 Meteor.methods({
 
-  deleteIntegration: function(integrationId) {
+  linkList: function(integrationId, listId) {
 
-  	// Delete
-  	Integrations.remove(integrationId);
+    console.log(integrationId);
+    console.log(listId);
+
+    Integrations.update(integrationId, {$set: {listId: listId}});
+
+  },
+  getIntegrations: function() {
+
+    return Integrations.find({}).fetch();
+
+  },
+  addIntegration: function(data) {
+
+    // Insert
+    Integrations.insert(data);
+
+  },
+  removeIntegration: function(data) {
+
+    // Insert
+    Integrations.remove(data);
 
   },
 
@@ -17,16 +36,16 @@ Meteor.methods({
   },
   refreshAllEdd: function() {
 
-    // Get all users
-    var users = Meteor.users.find({}).fetch();
+    // // Get all users
+    // var users = Meteor.users.find({}).fetch();
 
-    // Refresh all users
-    for (u = 0; u < users.length; u++) {
+    // // Refresh all users
+    // for (u = 0; u < users.length; u++) {
 
-      console.log('Fetching EDD data for user: ' + users[u]._id);
+    //   console.log('Fetching EDD data for user: ' + users[u]._id);
 
-      // Grab all EDD integrations for this user
-      integrations = Integrations.find({ownerId: users[u]._id, service: "edd"}).fetch();
+      // Grab all integrations for this user
+      integrations = Integrations.find({type: "purecart"}).fetch();
 
       // Go through all integrations
       for (l = 0; l < integrations.length; l++) {
@@ -56,9 +75,9 @@ Meteor.methods({
 
       }
 
-      console.log('Finished fetching EDD data for user: ' + users[u]._id);
+    //   console.log('Finished fetching EDD data for user: ' + users[u]._id);
 
-    }
+    // }
   },
   getEddProducts: function(integration) {
 
