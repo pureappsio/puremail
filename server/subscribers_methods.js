@@ -31,16 +31,7 @@ Meteor.methods({
     }
 
     // Insert interests
-    var interests = [];
-    for (i = 0; i < subscriberInterests.length; i++) {
-
-      // Find interests ID
-      var interest = Interests.findOne({name: subscriberInterests[i], ownerId: Meteor.user()._id});
-      interests.push(interest);
-
-    }
-    console.log(interests);
-    subscriber.interests = interests;
+    subscriber.tags = subscriberInterests;
 
     // Add
     Subscribers.insert(subscriber);
@@ -128,14 +119,14 @@ Meteor.methods({
   updateSubscriberInterests: function(subscriber, interests) {
 
     // Current interests
-    if (subscriber.interests) {
-      currentInterests = subscriber.interests;
+    if (subscriber.tags) {
+      currentInterests = subscriber.tags;
 
       // Add new interests
       for (j = 0; j < interests.length; j++) {
         var interestPresent = false;
         for (l = 0; l < currentInterests.length; l++) {
-          if(interests[j].name == currentInterests[l].name) {interestPresent = true;}
+          if(interests[j] == currentInterests[l]) {interestPresent = true;}
         }
         if (!interestPresent) {currentInterests.push(interests[j]);}
       }
@@ -145,7 +136,7 @@ Meteor.methods({
     }
 
     // Return
-    subscriber.interests = currentInterests;
+    subscriber.tags = currentInterests;
     return subscriber;
 
   },
@@ -169,14 +160,24 @@ Meteor.methods({
       console.log(list);
 
       // Send notifications
-      if (Meteor.settings.pushoverToken && Meteor.settings.pushoverUser) {
+      if (Integrations.findOne({type: 'puremetrics'})) {
 
+        // Get integration
+        var integration = Integrations.findOne({type: 'puremetrics'});
+
+        // Parameters
         parameters = {
-          token: Meteor.settings.pushoverToken,
-          user: Meteor.settings.pushoverUser,
+          type: 'subscription',
           message: 'New subscriber to the ' + list.name + ' email list'
         };
-        HTTP.post('https://api.pushover.net/1/messages.json', {params: parameters});
+
+        // Add origin
+        if (subscriber.origin) {
+          parameters.origin = subscriber.origin;
+        }
+
+        // Post
+        HTTP.post('https://' + integration.url + '/api/notifications?key='+ integration.key, {params: parameters});
 
       }
 
@@ -239,6 +240,19 @@ Meteor.methods({
     // Insert
     Scheduled.insert(entry);
 
+    // Offers ?
+    if (Offers.findOne({emailId: rule._id})) {
+      
+      console.log('Offer found');
+
+      // Offer
+      var offer = Offers.findOne({emailId: rule._id});
+
+      // Assign offer to subscriber
+      Subscribers.update(subscriber._id, {$push: {offers: offer._id}});
+
+    }
+
   },
   addSubscriber: function(data) {
 
@@ -254,23 +268,11 @@ Meteor.methods({
     var user = Meteor.users.findOne({_id: list.ownerId});
 
     // Process data
-    if (data.interests) {
+    if (data.tags) {
 
-      // Check if array
-      if (!(Array.isArray(data.interests))) {
-        var newInterests = [];
-        newInterests.push(data.interests);
-        data.interests = newInterests;
-      }
+      // Insert
+      subscriber.tags = data.tags;
 
-      // Insert interests
-      var interests = [];
-      for (i = 0; i < data.interests.length; i++) {
-        // Find interests ID
-        var interest = Interests.findOne({name: data.interests[i], ownerId: user._id});
-        interests.push(interest);
-      }
-      subscriber.interests = interests;
     }
 
     if (data.origin) {
@@ -280,10 +282,6 @@ Meteor.methods({
     if (data.sequence) {
       subscriber.sequenceId = data.sequence;
     }
-
-    // if (data.product) {
-    //   subscriber.products = [data.product];
-    // }
 
     // Set dates
     subscriber.last_updated = new Date();
@@ -301,11 +299,11 @@ Meteor.methods({
       console.log('Updating subscriber');
 
       // Fuse interests
-      if (subscriber.interests) {
+      if (subscriber.tags) {
          
         // Get all interests
-        var previousInterests = Subscribers.findOne(isSubscriber._id).interests;
-        var newInterests = subscriber.interests;
+        var previousInterests = Subscribers.findOne(isSubscriber._id).tags;
+        var newInterests = subscriber.tags;
 
         if (previousInterests && newInterests) {
 
@@ -318,7 +316,7 @@ Meteor.methods({
 
               if (previousInterests[p] && newInterests[n]) {
 
-                if (previousInterests[p]._id == newInterests[n]._id) {
+                if (previousInterests[p] == newInterests[n]) {
                   matchInterest = true;
                 }
 
@@ -331,7 +329,7 @@ Meteor.methods({
           }
 
           // Update
-          Subscribers.update(isSubscriber._id, {$set: {"interests": interests} });
+          Subscribers.update(isSubscriber._id, {$set: {"tags": interests} });
 
         }
 
@@ -365,46 +363,6 @@ Meteor.methods({
 
         }
 
-        // // Check for sequence for existing subscriber
-        // var sequences = Sequences.find({listId: isSubscriber.listId, trigger: 'subscribers'}).fetch();
-        // var sequenceMatch = false;
-
-        // for (i = 0; i < subscriber.interests.length; i++) {
-
-        //   for (s = 0; s < sequences.length; s++) {
-
-        //     if (sequences[s].interest == subscriber.interests[i].name) {
-
-        //       // Match sequence
-        //       sequenceMatch = true;
-        //       sequenceIndex = s;
-
-        //     }
-
-        //   }
-
-        // }
-
-        // // If we found a sequence
-        // if (sequenceMatch) {
-
-        //   // Get sequence
-        //   var sequence = sequences[sequenceIndex];
-
-        //   // Assign to user
-        //   Subscribers.update(isSubscriber._id, {$set: {"sequenceId": sequence._id } });
-
-        //   // Get first email
-        //   var branchEmail = Automations.findOne({sequenceId: sequence._id, order: 1});
-
-        //   // Assign email
-        //   Subscribers.update(isSubscriber._id, {$set: {"sequenceEmail": branchEmail._id } });
-
-        //   // Add to scheduler
-        //   Meteor.call('addAutomationEmail', branchEmail, isSubscriber, list, user);
-
-        // }
-
       }
 
       else {
@@ -418,39 +376,8 @@ Meteor.methods({
           // Get first email
           var firstEmail = Automations.findOne({sequenceId: sequence._id, order: 1});
 
-          // Calculate date
-          var currentDate = new Date();
-          currentDate = currentDate.getTime();
-
-          if (firstEmail.period == 'seconds') {
-            currentDate += firstEmail.time * 1000;
-          }
-
-          if (firstEmail.period == 'minutes') {
-            currentDate += firstEmail.time * 1000 * 60;
-          }
-          if (firstEmail.period == 'hours') {
-            currentDate += firstEmail.time * 1000 * 60 * 60;
-          }
-          if (firstEmail.period == 'days') {
-            currentDate += firstEmail.time * 1000 * 60 * 60 * 24;
-          }
-
-          var entryDate = new Date(currentDate);
-
-          // Add first email to scheduler
-          var entry = {
-            name: firstEmail.emailSubject,
-            ownerId: user._id,
-            date: entryDate,
-            to: subscriber.email,
-            from: list.userName + ' <' + list.brandEmail +'>',
-            subject: firstEmail.emailSubject,
-            text: firstEmail.emailText,
-            listId: subscriber.listId
-          }
-          console.log(entry);
-          Scheduled.insert(entry);
+          // Add email
+          Meteor.call('addAutomationEmail', firstEmail, subscriber, subscriber.listId, user);
 
         }
 
@@ -569,23 +496,8 @@ Meteor.methods({
     var user = Meteor.users.findOne({_id: list.ownerId});
 
     // Process data
-    if (data.interests) {
-
-      // Check if array
-      if (!(Array.isArray(data.interests))) {
-        var newInterests = [];
-        newInterests.push(data.interests);
-        data.interests = newInterests;
-      }
-
-      // Insert interests
-      var interests = [];
-      for (i = 0; i < data.interests.length; i++) {
-        // Find interests ID
-        var interest = Interests.findOne({name: data.interests[i], ownerId: user._id});
-        interests.push(interest);
-      }
-      subscriber.interests = interests;
+    if (data.tags) {
+      subscriber.tags = tags;
     }
     if (data.origin) {
       subscriber.origin = data.origin;

@@ -29,7 +29,7 @@ Meteor.methods({
 
           // Generate subscriber
           var emailElement = {
-            interests: interests,
+            tags: interests,
             email: email,
             ownerId: user._id,
             listId: listId,

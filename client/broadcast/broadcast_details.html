@@ -1,13 +1,12 @@
 <template name='broadcastDetails'>
-
-<div class='row'>
-
-  <div class='col-md-5'><a href='{{pathFor "broadcastData"}}'>{{subject}}</a></div>
-  <div class='col-md-2'>{{recipients}}</div>
-  <div class='col-md-2'>{{getOpened}}%</div>
-  <div class='col-md-2'>{{getClicked}}%</div>
-  <div class='col-md-1'><button class='btn btn-danger broadcast-delete'>Delete</button></div>
-
-</div>
-
+    <div class='row'>
+        <div class='col-md-5'><a href='{{pathFor "broadcastData"}}'>{{subject}}</a></div>
+        <div class='col-md-2'>{{recipients}}</div>
+        <div class='col-md-2'>{{getOpened}}%</div>
+        <div class='col-md-2'>{{getClicked}}%</div>
+        <!--   <div class='col-md-1'><button class='btn btn-warning broadcast-resend'>Resend</button> -->
+        <div class='col-md-1'>
+            <button class='btn btn-danger broadcast-delete'>Delete</button>
+        </div>
+    </div>
 </template>

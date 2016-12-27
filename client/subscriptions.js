@@ -9,6 +9,7 @@ Tracker.autorun(function() {
     Meteor.subscribe('userBroadcasts');
     Meteor.subscribe('userScheduled');
     Meteor.subscribe('userSequences');
+    Meteor.subscribe('userOffers');
     Meteor.subscribe('userProducts');
     Meteor.subscribe('userGumroad');
     Meteor.subscribe('userIntegrations');

@@ -1,137 +1,151 @@
 Template.listSubscribers.helpers({
 
-  interests: function() {
-    return Interests.find({listId: this._id});
-  },
-  subscribers: function() {
-    if (Session.get('subscriberSearch')) {
+    interests: function() {
+        return Interests.find({ listId: this._id });
+    },
+    subscribers: function() {
 
-      if (Session.get('subscriberSearch') == 'all') {
-        return Subscribers.find({listId: this._id}, {sort: {date_added: -1}, limit : 25});
-      }
-      else {
-        return Subscribers.find({listId: this._id, email: Session.get('subscriberSearch')});
-      }
-    }
-    else {
-      return Subscribers.find({listId: this._id}, {sort: {date_added: -1}, limit : 25});
-    }
+        return Session.get('subscribers');
 
-  },
-  getListId: function() {
-    return this._id;
-  },
-  totalSubscribers: function() {
-    return Subscribers.find({listId: this._id}).fetch().length;
-  },
-  percentageCustomers: function() {
-    numberCustomers = Subscribers.find({listId: this._id, nb_products: { $gt: 0 } }).fetch().length;
-    numberEmails = Subscribers.find({listId: this._id}).fetch().length;
-    if (numberEmails != 0) {
-      return (numberCustomers/numberEmails*100).toFixed(2);
+    },
+    getListId: function() {
+        return this._id;
+    },
+    totalSubscribers: function() {
+        return Session.get('totalSubscribers');
+    },
+    // percentageCustomers: function() {
+    //   numberCustomers = Subscribers.find({listId: this._id, nb_products: { $gt: 0 } }).fetch().length;
+    //   numberEmails = Subscribers.find({listId: this._id}).fetch().length;
+    //   if (numberEmails != 0) {
+    //     return (numberCustomers/numberEmails*100).toFixed(2);
+    //   }
+    //   else {
+    //     return 0;
+    //   }
+    // },
+    // percentageSequence: function() {
+    //   numberSequence = Subscribers.find({listId: this._id, sequenceId: { $not: null } }).fetch().length;
+    //   numberEmails = Subscribers.find({listId: this._id}).fetch().length;
+    //   if (numberEmails != 0) {
+    //     return (numberSequence/numberEmails*100).toFixed(2);
+    //   }
+    //   else {
+    //     return 0;
+    //   }
+    // },
+    showList: function() {
+        return Session.get('showList');
     }
-    else {
-      return 0;
-    }
-  },
-  percentageSequence: function() {
-    numberSequence = Subscribers.find({listId: this._id, sequenceId: { $not: null } }).fetch().length;
-    numberEmails = Subscribers.find({listId: this._id}).fetch().length;
-    if (numberEmails != 0) {
-      return (numberSequence/numberEmails*100).toFixed(2);
-    }
-    else {
-      return 0;
-    }
-  },
-  showList: function() {
-    return Session.get('showList');
-  }
 
 });
 
 Template.listSubscribers.events({
 
-  'click #add-subscriber': function() {
+    'click #add-subscriber': function() {
 
-    // Get data
-    var email = $('#subscriber-email').val();
-    var selectedInterests = Session.get('selectedInterests');
+        // Get data
+        var email = $('#subscriber-email').val();
+        var selectedInterests = Session.get('selectedInterests');
 
-    // Add
-    Meteor.call('addManualSubscriber', email, selectedInterests, this._id);
+        // Add
+        Meteor.call('addManualSubscriber', email, selectedInterests, this._id);
 
-  },
-  'click #delete-subscriber': function() {
+        // Get all subscribers
+        Meteor.call('getTotalSubscribersList', this._id, function(err, data) {
+            Session.set('totalSubscribers', data);
+        });
 
-    // Get data
-    var email = $('#delete-subscriber-email').val();
+        // Get subscribers
+        Meteor.call('getLatestSubscribers', this._id, function(err, data) {
+            console.log(err);
+            Session.set('subscribers', data);
+        });
 
-    // Add
-    Meteor.call('removeSubscriber', email, this._id);
+    },
+    'click #delete-subscriber': function() {
 
-  },
-  'click #find-subscriber': function() {
+        // Get data
+        var email = $('#delete-subscriber-email').val();
 
-    // Get data
-    var email = $('#find-subscriber-email').val();
+        // Add
+        Meteor.call('removeSubscriber', email, this._id);
 
-    // Search
-    Session.set('subscriberSearch', email);
+    },
+    'click #find-subscriber': function() {
 
-  },
-  'click #show-all': function() {
+        // Get data
+        var email = $('#find-subscriber-email').val();
 
-    // Show
-    Session.set('subscriberSearch', "all");
+        // Search
+        Session.set('subscriberSearch', email);
 
-  },
-  'click #remove-subscribers': function() {
+    },
+    'click #show-all': function() {
 
-    // Remove all
-    Meteor.call('removeSubscribersList', this._id);
+        // Show
+        Session.set('subscriberSearch', "all");
 
-  },
-  'change .interest': function() {
+    },
+    'click #remove-subscribers': function() {
 
-    // Selected interests
-    var selectedInterests = [];
+        // Remove all
+        Meteor.call('removeSubscribersList', this._id);
 
-    // Interests
-    var interests = Interests.find({}).fetch();
+    },
+    'change .interest': function() {
 
-    // Get value of all category filters
-    for (i = 0; i < interests.length; i++) {
-      if ($("#" + interests[i]._id).is(':checked')) {
-        selectedInterests.push(interests[i].name);
-      }
+        // Selected interests
+        var selectedInterests = [];
+
+        // Interests
+        var interests = Interests.find({}).fetch();
+
+        // Get value of all category filters
+        for (i = 0; i < interests.length; i++) {
+            if ($("#" + interests[i]._id).is(':checked')) {
+                selectedInterests.push(interests[i].name);
+            }
+        }
+
+        // Set
+        Session.set('selectedInterests', selectedInterests);
     }
 
-    // Set
-    Session.set('selectedInterests', selectedInterests);
-  },
+    // 'click #show-list': function() {
 
-  'click #show-list': function() {
+    //   var state = Session.get('showList');
 
-    var state = Session.get('showList');
+    //   if (state == true) {
+    //     $('#show-list').text("Show List Details");
+    //       Session.set('showList', false);
+    //   }
+    //   else {
+    //     $('#show-list').text("Hide List Details");
+    //     Session.set('showList', true);
+    //   }
 
-    if (state == true) {
-      $('#show-list').text("Show List Details");
-        Session.set('showList', false);
-    }
-    else {
-      $('#show-list').text("Hide List Details");
-      Session.set('showList', true);
-    }
-
-  }
+    // }
 
 });
 
 Template.listSubscribers.rendered = function() {
 
-  Session.set('showList', false);
+    var listId = this.data._id;
 
-  Session.set('selectedInterests', []);
+    // Get all subscribers
+    Meteor.call('getTotalSubscribersList', listId, function(err, data) {
+        Session.set('totalSubscribers', data);
+    });
+
+    // Get subscribers
+    Meteor.call('getLatestSubscribers', listId, function(err, data) {
+        console.log(err);
+        Session.set('subscribers', data);
+    });
+
+    Session.set('showList', true);
+
+    Session.set('selectedInterests', []);
 
 }

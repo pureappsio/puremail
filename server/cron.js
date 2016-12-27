@@ -9,6 +9,10 @@
 //   }
 // });
 
+SyncedCron.config({
+  log: false
+});
+
 SyncedCron.add({
   name: 'Send scheduled emails',
   schedule: function(parser) {
@@ -40,8 +44,4 @@ SyncedCron.add({
   job: function() {
     Meteor.call('wakeUpDyingLeads');
   }
-});
-
-SyncedCron.config({
-  log: false
 });

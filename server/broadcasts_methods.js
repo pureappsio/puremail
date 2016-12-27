@@ -1,297 +1,386 @@
+// Import SendGrid
+import sendgridModule from 'sendgrid';
+const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
+
 Meteor.methods({
 
-  sendEmails: function(broadcastId) {
+    sendBroadcast: function(scheduled) {
 
-    var startTime = new Date();
+        console.log('Sending brodcast');
 
-    // Get broadcast
-    broadcast = Broadcasts.findOne(broadcastId);
+        // Get list
+        var list = Lists.findOne(scheduled.listId);
 
-    // Get list
-    list = Lists.findOne(broadcast.listId);
-    from = list.userName + ' <' + list.brandEmail +'>';
+        // Get recipients
+        allRecipients = Meteor.call('filterSubscribers', scheduled.listId, scheduled.filters);
 
-    console.log('Sending broadcast email from: ' + from);
+        // Get host
+        host = Meteor.absoluteUrl();
 
-    // // Filter
-    // recipients = Meteor.call('filterSubscribers', broadcast.listId, broadcast.filters);
+        // Add unsubscribe data
+        if (list.language) {
+            if (list.language == 'en') {
+                var unsubscribeText = "Unsubscribe";
+            }
+            if (list.language == 'fr') {
+                var unsubscribeText = "Se désinscrire";
+            }
+        } else {
+            var unsubscribeText = "Unsubscribe";
+        }
+        scheduled.text += "<p><a style='color: gray;' href='" + host + "unsubscribe?s=-subscriberId-'>" + unsubscribeText + "</a></p>";
 
-    // // Go through people
-    // var entries = [];
-    // for (i = 0; i < recipients.length; i++) {
-
-    //   // Create new entry
-    //   var entry = {
-    //     name: list.userName,
-    //     ownerId: Meteor.user()._id,
-    //     listId: broadcast.listId,
-    //     date: broadcast.time,
-    //     to: recipients[i].email,
-    //     from: list.userName + ' <' + list.brandEmail +'>',
-    //     subject: broadcast.subject,
-    //     text: broadcast.text,
-    //     type: 'broadcast',
-    //     broadcastId: broadcastId
-    //   }
-
-    //   // Add to array
-    //   entries.push(entry);
-
-    // }
-
-    // Push array in Scheduled
-    // Scheduled.batchInsert(entries);
-
-    // var endTime = new Date();
-    // console.log('Time to add emails to scheduler: ' + (endTime.getTime() - startTime.getTime() ) + ' ms' );
-
-    // Make entry
-    entry = {
-
-      name: list.userName,
-      ownerId: Meteor.user()._id,
-      listId: broadcast.listId,
-      date: broadcast.time,
-      from: list.userName + ' <' + list.brandEmail +'>',
-      subject: broadcast.subject,
-      filters: broadcast.filters,
-      text: broadcast.text,
-      type: 'broadcast',
-      broadcastId: broadcastId,
-      recipients: broadcast.recipients
-    };
-    Scheduled.insert(entry);
-
-  },
-  saveBroadcast: function(broadcast) {
-
-    // Get number of recipients
-    var recipients = Meteor.call('filterSubscribers', broadcast.listId, broadcast.filters);
-    broadcast.recipients = recipients.length;
-    console.log(broadcast);
-
-    // Insert
-    var broadcastId = Broadcasts.insert(broadcast);
-    return broadcastId;
-
-  },
-  deleteBroadcast: function(broadcastId) {
-
-    // Delete
-    Broadcasts.remove(broadcastId);
-
-  },
-  getNumberFilteredSubscribers: function(listId, filters) {
-
-    var filteredSubscribers = Meteor.call('filterSubscribers', listId, filters);
-    return filteredSubscribers.length;
-
-  },
-  filterSubscribers: function(listId, filters) {
-
-    // Get all subscribers
-   	var subscribers = Subscribers.find({listId: listId}).fetch();
-
-   	// Filter
-   	var filteredCustomers = [];
-
-   	for (i = 0; i < subscribers.length; i++) {
-
-      currentSubscriber = subscribers[i];
-      addSubscriberArray = [];
-
-      for (f = 0; f < filters.length; f++) {
-
-        criteria = filters[f].criteria;
-        option = filters[f].option;
-
-        if (criteria == 'subscribed') {
-
-          addSubscriberArray[f] = false;
-
-            if (currentSubscriber.listId == option) {
-              addSubscriberArray[f] = true;
+        // Split for API
+        var apiLimit = 500;
+        if (allRecipients.length < apiLimit) {
+            var splitRecipients = [allRecipients];
+        } else {
+            var splitRecipients = [];
+            var recipientsGroups = Math.ceil(allRecipients.length / apiLimit);
+            for (g = 0; g < recipientsGroups; g++) {
+                splitRecipients[g] = allRecipients.slice(g * apiLimit, apiLimit * (g + 1));
             }
 
         }
 
-      if (criteria == 'notsubscribed'){
+        for (s = 0; s < splitRecipients.length; s++) {
 
-        addSubscriberArray[f] = true;
+            recipients = splitRecipients[s];
+            console.log('Sending for ' + recipients.length);
 
-        if (currentSubscriber.listId == option) {
-          addSubscriberArray[f] = false;
-        }
+            // Mail object
+            var helper = sendgridModule.mail;
+            mail = new helper.Mail()
 
-      }
+            // Get emails
+            var emails = [];
+            for (r = 0; r < recipients.length; r++) {
 
-      if (criteria == 'opened') {
+                if (recipients[r].email != "") {
 
-        addSubscriberArray[f] = false;
+                    personalization = new helper.Personalization();
 
-          if (currentSubscriber.opened >= option) {
-            addSubscriberArray[f] = true;
-          }
+                    email = new helper.Email(recipients[r].email);
+                    personalization.addTo(email);
 
-      }
+                    custom_arg = new helper.CustomArgs("subscriberId", recipients[r]._id);
+                    personalization.addCustomArg(custom_arg);
 
-      if (criteria == 'clicked') {
+                    substitution = new helper.Substitution("-subscriberId-", recipients[r]._id);
+                    personalization.addSubstitution(substitution);
 
-        addSubscriberArray[f] = false;
+                    mail.addPersonalization(personalization);
 
-          if (currentSubscriber.clicked >= option) {
-            addSubscriberArray[f] = true;
-          }
+                }
 
-      }
-
-      if (criteria == 'coming') {
-
-        addSubscriberArray[f] = false;
-
-          if (currentSubscriber.origin == option) {
-            addSubscriberArray[f] = true;
-          }
-
-      }
-
-      if (criteria == 'notcoming') {
-
-        addSubscriberArray[f] = true;
-
-          if (currentSubscriber.origin == option) {
-            addSubscriberArray[f] = false;
-          }
-
-      }
-
-      if (criteria == 'bought') {
-
-        addSubscriberArray[f] = false;
-
-          if (currentSubscriber.nb_products >= option) {
-            addSubscriberArray[f] = true;
-          }
-
-      }
-
-      if (criteria == 'boughtless') {
-
-        addSubscriberArray[f] = false;
-
-          if (currentSubscriber.nb_products <= option || !currentSubscriber.nb_products) {
-            addSubscriberArray[f] = true;
-          }
-
-      }
-
-      if (criteria == 'boughtproduct') {
-
-        addSubscriberArray[f] = false;
-
-          if (currentSubscriber.products) {
-            for (j = 0; j < currentSubscriber.products.length; j++) {
-              if (currentSubscriber.products[j].name == option) {
-                addSubscriberArray[f] = true;
-              }
             }
-          }
-      }
 
-      if (criteria == 'notboughtproduct') {
+            // Common
+            email = new helper.Email(list.brandEmail, list.userName);
+            mail.setFrom(email);
+            mail.setSubject(scheduled.subject);
+            content = new helper.Content("text/html", scheduled.text);
+            mail.addContent(content)
 
-        addSubscriberArray[f] = true;
-
-          if (currentSubscriber.products) {
-            for (j = 0; j < currentSubscriber.products.length; j++) {
-              if (currentSubscriber.products[j].name == option) {
-                addSubscriberArray[f] = false;
-              }
+            if (scheduled.broadcastId) {
+                custom_arg = new helper.CustomArgs("broadcastId", scheduled.broadcastId);
+                mail.addCustomArg(custom_arg);
             }
-          }
-      }
 
-      if (criteria == 'are') {
+            // Send
+            var requestBody = mail.toJSON()
+            // console.log(requestBody.personalizations[0]);
+            var request = sendgrid.emptyRequest()
+            request.method = 'POST'
+            request.path = '/v3/mail/send'
+            request.body = requestBody
 
-        addSubscriberArray[f] = false;
-
-        if (option == 'customers' && currentSubscriber.nb_products >= 1) {
-          addSubscriberArray[f] = true;
-        }
-
-        if (option == 'notcustomers') {
-          if (currentSubscriber.nb_products == 0 || !currentSubscriber.nb_products) {
-            addSubscriberArray[f] = true
-          }
-        }
-
-        if (option == 'sequence' && currentSubscriber.sequenceId != null) {
-          addSubscriberArray[f] = true;
-        }
-
-        if (option == 'notsequence') {
-          if (currentSubscriber.sequenceId == null || !currentSubscriber.sequenceId) {
-            addSubscriberArray[f] = true
-          }
-        }
-
-      }
-
-      if (criteria == 'interested') {
-
-        addSubscriberArray[f] = false;
-        if (currentSubscriber.interests) {
-          for (j = 0; j < currentSubscriber.interests.length; j++) {
-            if (currentSubscriber.interests[j]._id == option) {
-              addSubscriberArray[f] = true;
+            if (Meteor.settings.mode != 'demo') {
+                sendgrid.API(request, function(err, response) {
+                    if (response.statusCode != 202) {
+                        console.log('Successfuly sent broadcast');
+                    }
+                });
             }
-          }
-        }
-
-      }
-
-      if (criteria == 'plan') {
-
-        addSubscriberArray[f] = false;
-
-        if (option == 'yes') {
-
-          if (currentSubscriber.plan) {
-            addSubscriberArray[f] = true;
-          }
-          else {
-            addSubscriberArray[f] = false;
-          }
-
-        }
-        if (option == 'no') {
-
-          if (currentSubscriber.plan) {
-            addSubscriberArray[f] = false;
-          }
-          else {
-            addSubscriberArray[f] = true;
-          }
 
         }
 
-      }
+        // Remove
+        Scheduled.remove(scheduled._id);
 
-      }
+    },
+    getBroadcastStats: function(broadcastId, event) {
 
-      addSubscriber = true;
-      for (c = 0; c < addSubscriberArray.length; c++) {
-        addSubscriber = addSubscriber * addSubscriberArray[c];
-      }
+        // Get broadcast
+        var broadcast = Broadcasts.findOne(broadcastId);
 
-      if (addSubscriber) {
-        filteredCustomers.push(currentSubscriber);
-      }
+        // Get stats
+        var stat = Stats.find({ broadcastId: broadcastId, event: event }).fetch().length;
+        if (stat != 0) {
+            return ((stat / broadcast.recipients) * 100).toFixed(2);
+        } else {
+            return 0;
+        }
+
+    },
+    sendEmails: function(broadcastId) {
+
+        var startTime = new Date();
+
+        // Get broadcast
+        broadcast = Broadcasts.findOne(broadcastId);
+
+        // Get list
+        list = Lists.findOne(broadcast.listId);
+        from = list.userName + ' <' + list.brandEmail + '>';
+
+        console.log('Sending broadcast email from: ' + from);
+
+        // Make entry
+        entry = {
+
+            name: list.userName,
+            ownerId: Meteor.user()._id,
+            listId: broadcast.listId,
+            date: broadcast.time,
+            from: list.userName + ' <' + list.brandEmail + '>',
+            subject: broadcast.subject,
+            filters: broadcast.filters,
+            text: broadcast.text,
+            type: 'broadcast',
+            broadcastId: broadcastId,
+            recipients: broadcast.recipients
+        };
+        Scheduled.insert(entry);
+
+    },
+    saveBroadcast: function(broadcast) {
+
+        // Get number of recipients
+        var recipients = Meteor.call('filterSubscribers', broadcast.listId, broadcast.filters);
+        broadcast.recipients = recipients.length;
+        console.log(broadcast);
+
+        // Insert
+        var broadcastId = Broadcasts.insert(broadcast);
+        return broadcastId;
+
+    },
+    deleteBroadcast: function(broadcastId) {
+
+        // Delete
+        Broadcasts.remove(broadcastId);
+
+    },
+    getNumberFilteredSubscribers: function(listId, filters) {
+
+        var filteredSubscribers = Meteor.call('filterSubscribers', listId, filters);
+        return filteredSubscribers.length;
+
+    },
+    filterSubscribers: function(listId, filters) {
+
+        // Get all subscribers
+        var subscribers = Subscribers.find({ listId: listId }).fetch();
+
+        // Filter
+        var filteredCustomers = [];
+
+        for (i = 0; i < subscribers.length; i++) {
+
+            currentSubscriber = subscribers[i];
+            addSubscriberArray = [];
+
+            for (f = 0; f < filters.length; f++) {
+
+                criteria = filters[f].criteria;
+                option = filters[f].option;
+
+                if (criteria == 'subscribed') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.listId == option) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'notsubscribed') {
+
+                    addSubscriberArray[f] = true;
+
+                    if (currentSubscriber.listId == option) {
+                        addSubscriberArray[f] = false;
+                    }
+
+                }
+
+                if (criteria == 'opened') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.opened >= option) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'clicked') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.clicked >= option) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'coming') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.origin == option) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'notcoming') {
+
+                    addSubscriberArray[f] = true;
+
+                    if (currentSubscriber.origin == option) {
+                        addSubscriberArray[f] = false;
+                    }
+
+                }
+
+                if (criteria == 'bought') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.nb_products >= option) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'boughtless') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.nb_products <= option || !currentSubscriber.nb_products) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                }
+
+                if (criteria == 'boughtproduct') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (currentSubscriber.products) {
+                        for (j = 0; j < currentSubscriber.products.length; j++) {
+                            if (currentSubscriber.products[j] == option) {
+                                addSubscriberArray[f] = true;
+                            }
+                        }
+                    }
+                }
+
+                if (criteria == 'notboughtproduct') {
+
+                    addSubscriberArray[f] = true;
+
+                    if (currentSubscriber.products) {
+                        for (j = 0; j < currentSubscriber.products.length; j++) {
+                            if (currentSubscriber.products[j] == option) {
+                                addSubscriberArray[f] = false;
+                            }
+                        }
+                    }
+                }
+
+                if (criteria == 'are') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (option == 'customers' && currentSubscriber.nb_products >= 1) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                    if (option == 'notcustomers') {
+                        if (currentSubscriber.nb_products == 0 || !currentSubscriber.nb_products) {
+                            addSubscriberArray[f] = true
+                        }
+                    }
+
+                    if (option == 'sequence' && currentSubscriber.sequenceId != null) {
+                        addSubscriberArray[f] = true;
+                    }
+
+                    if (option == 'notsequence') {
+                        if (currentSubscriber.sequenceId == null || !currentSubscriber.sequenceId) {
+                            addSubscriberArray[f] = true
+                        }
+                    }
+
+                }
+
+                if (criteria == 'interested') {
+
+                    addSubscriberArray[f] = false;
+                    if (currentSubscriber.tags) {
+                        for (j = 0; j < currentSubscriber.tags.length; j++) {
+                            if (currentSubscriber.tags[j] == option) {
+                                addSubscriberArray[f] = true;
+                            }
+                        }
+                    }
+
+                }
+
+                if (criteria == 'plan') {
+
+                    addSubscriberArray[f] = false;
+
+                    if (option == 'yes') {
+
+                        if (currentSubscriber.plan) {
+                            addSubscriberArray[f] = true;
+                        } else {
+                            addSubscriberArray[f] = false;
+                        }
+
+                    }
+                    if (option == 'no') {
+
+                        if (currentSubscriber.plan) {
+                            addSubscriberArray[f] = false;
+                        } else {
+                            addSubscriberArray[f] = true;
+                        }
+
+                    }
+
+                }
+
+            }
+
+            addSubscriber = true;
+            for (c = 0; c < addSubscriberArray.length; c++) {
+                addSubscriber = addSubscriber * addSubscriberArray[c];
+            }
+
+            if (addSubscriber) {
+                filteredCustomers.push(currentSubscriber);
+            }
+
+        }
+
+        return filteredCustomers;
 
     }
-
-    return filteredCustomers;
-
-  }
 
 });

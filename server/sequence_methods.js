@@ -93,20 +93,6 @@ Meteor.methods({
     }
     var entryDate = new Date(currentDate);
 
-    // Base entry
-    // var baseEntry = {
-    //   name: list.userName,
-    //   ownerId: Meteor.user()._id,
-    //   listId: list._id,
-    //   date: entryDate,
-    //   from: list.userName + ' <' + list.brandEmail +'>',
-    //   subject: firstEmail.emailSubject,
-    //   text: firstEmail.emailText,
-    //   ruleId: firstEmail._id,
-    //   sequenceId: firstEmail.sequenceId,
-    //   sequenceEmail: firstEmail.order
-    // }
-
     // Assign sequence
     var entries = [];
     for (i = 0; i < recipients.length; i++) {

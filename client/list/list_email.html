@@ -19,12 +19,9 @@
     {{#each interests}}
       {{> interest}}
     {{/each}}
-    {{#if isBlogVisitor}}
-      <span class="label label-warning">BLOG VISITOR</span>
-    {{/if}}
-    {{#if isLanding}}
-      <span class="label label-warning">LANDING PAGE</span>
-    {{/if}}
+
+    <span class="label {{originColor}}">{{originName}}</span>
+
   </div>
   <div class='col-md-2'><span class="label label-info">{{fromDate date_added}}</span></div>
   <div class='col-md-1 delete'><span class="glyphicon glyphicon-remove glyph-delete" aria-hidden="true"></span></div>

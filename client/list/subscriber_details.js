@@ -1,5 +1,6 @@
 Template.subscriberDetails.rendered = function() {
 
+  // Get sequences
   var sequences = Sequences.find({listId: this.data.listId}).fetch();
 
   for (i in sequences) {
@@ -13,6 +14,24 @@ Template.subscriberDetails.rendered = function() {
     value: 'none',
     text: "No sequence"
   }));
+
+  // Create stats
+  Meteor.call('getSubscribersStats', this.data._id, 'delivered', function(err, data) {
+    Session.set('delivered', data);
+  });
+
+  Meteor.call('getSubscribersStats', this.data._id, 'opened', function(err, data) {
+    Session.set('opened', data);
+  });
+
+  Meteor.call('getSubscribersStats', this.data._id, 'clicked', function(err, data) {
+    Session.set('clicked', data);
+  });
+
+  // Mail history
+  Meteor.call('getMailHistory', this.data._id, function(err, data) {
+    Session.set('mailHistory', data);
+  });
 
 };
 
@@ -54,21 +73,20 @@ Template.subscriberDetails.helpers({
   },
   numberDelivered: function() {
 
-    var delivered = Stats.find({subscriberId: this._id, event: 'delivered'}).fetch().length;
-    return delivered;
+    return Session.get('delivered');
  
   },
   numberOpened: function() {
 
-    var opened = Stats.find({subscriberId: this._id, event: 'opened'}).fetch().length;
-    return opened;
+    return Session.get('opened');
 
   },
   numberClicked: function() {
 
-    var clicked = Stats.find({subscriberId: this._id, event: 'clicked'}).fetch().length;
-    return clicked;
-
+    return Session.get('clicked');
+  },
+  mailHistory: function() {
+    return Session.get('mailHistory');
   },
   sequenceName: function() {
     if (this.sequenceId == null) {
@@ -85,6 +103,9 @@ Template.subscriberDetails.helpers({
     else {
       return Automations.findOne(this.sequenceEmail).order;
     }
+  },
+  lastActive: function() {
+    return moment(this.last_updated).format('MMMM Do YYYY, hh:mm');
   }
 
 });

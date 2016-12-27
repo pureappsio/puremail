@@ -5,7 +5,7 @@ if(Meteor.isServer) {
 	});
 
 	Meteor.publish("userSubscribers", function () {
-	  return Subscribers.find({ownerId: this.userId});
+	  return Subscribers.find({ownerId: this.userId}, {sort: {date_added: -1}, limit: 50});
 	});
 
 	Meteor.publish("userLists", function () {
@@ -40,12 +40,16 @@ if(Meteor.isServer) {
 		return Products.find({ownerId: this.userId});
 	});
 
+	Meteor.publish("userOffers", function () {
+		return Offers.find({ownerId: this.userId});
+	});
+
 	Meteor.publish("userBroadcasts", function () {
 		return Broadcasts.find({ownerId: this.userId});
 	});
 
 	Meteor.publish("userStats", function () {
-		return Stats.find({ownerId: this.userId});
+		return Stats.find({ownerId: this.userId}, {sort: {date_added: -1}, limit: 50});
 	});
 
 	Meteor.publish("userIntegrations", function () {

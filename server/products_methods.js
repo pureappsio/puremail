@@ -9,10 +9,30 @@ Meteor.methods({
       var integration = Integrations.findOne({type: 'purecart'});
 
       // Get product
-      var url = "http://" + integration.url + "/api/products?key=" + integration.key;
-      var answer = HTTP.get(url + '&product=' + productId);
-      return answer.data.product;
+      var url = "https://" + integration.url + "/api/products/" + productId + "?key=" + integration.key;
 
+      var answer = HTTP.get(url);
+      return answer.data.product.name;
+
+    }
+
+  },
+  getProducts: function(listId) {
+
+    // Get integration
+    if (Integrations.findOne({type: 'purecart', listId: listId})) {
+
+      // Get integration
+      var integration = Integrations.findOne({type: 'purecart', listId: listId});
+
+      // Get product
+      var url = "https://" + integration.url + "/api/products?key=" + integration.key;
+      var answer = HTTP.get(url);
+      return answer.data.products;
+
+    }
+    else {
+      return [];
     }
 
   },
