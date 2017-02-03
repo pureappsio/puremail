@@ -76,9 +76,9 @@ Template.listEmail.helpers({
             return false;
         }
     },
-    interests: function() {
-        if (this.interests) {
-            return this.interests;
+    tags: function() {
+        if (this.tags) {
+            return Interests.find({ _id : { $in : this.tags } });
         }
     }
 });

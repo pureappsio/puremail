@@ -7,8 +7,8 @@ Meteor.methods({
 
         if (scheduled) {
 
-            console.log('Scheduled message: ')
-            console.log(scheduled);
+            // console.log('Scheduled message: ')
+            // console.log(scheduled);
 
             var currentDate = new Date();
             currentDate = currentDate.getTime();
@@ -24,7 +24,7 @@ Meteor.methods({
 
             if ((currentDate - scheduledDate) > 0) {
 
-            	console.log('Sending scheduled message')
+            	// console.log('Sending scheduled message')
 
                 if (scheduled.type == 'simple') {
 

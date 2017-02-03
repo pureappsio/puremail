@@ -54,17 +54,43 @@
         </div>
     </div>
     <div class='row'>
+        <div class='col-md-1'>If</div>
+        <div class='col-md-2'>
+            <select id='select-criteria' class='form-control'>
+                <option value='bought'>Bought</option>
+                <option value='notbought'>Didn't buy</option>
+            </select>
+        </div>
+        <div class='col-md-2'>
+            <select id='select-parameter' class='form-control'></select>
+        </div>
+        <div class='col-md-1'>then go</div>
+        <div class='col-md-2'>
+            <select id='select-destination' class='form-control'></select>
+        </div>
+    </div>
+    <div class='row'>
         <div class='col-md-8'>
             <button id='add-condition' class='btn btn-default btn-block'>Add Condition</button>
         </div>
     </div>
-    <div id='conditions'></div>
-    <div id='destination'></div>
+    {{#each conditions}}{{> condition}}{{/each}}
     <div class='row'>
-        <div class='col-md-3'>
-            <select id='offer-product' class='form-control'></select>
+        <div class='col-md-2'>
+            <label>Use Offer</label>
+            <select id='use-offer' class='form-control'>
+                <option value='no'>No</option>
+                <option value='yes'>Yes</option>
+            </select>
         </div>
         <div class='col-md-3'>
+            <label>Product</label>
+            <select id='offer-product' class='form-control'>
+                
+            </select>
+        </div>
+        <div class='col-md-2'>
+            <label>Delay (days)</label>
             <select id='offer-delay' class='form-control'>
                 <option value='1'>1</option>
                 <option value='2'>2</option>
@@ -73,14 +99,25 @@
                 <option value='5'>5</option>
             </select>
         </div>
-        <div class='col-md-2'>
-            <button id='add-offer' class='btn btn-default btn-block'>Add Offer</button>
+        <div class='col-md-1'>
+            <label>Discount</label>
+            <select id='offer-discount' class='form-control'>
+                <option value='0'>0%</option>
+                <option value='10'>10%</option>
+                <option value='20'>20%</option>
+                <option value='25'>25%</option>
+                <option value='50'>50%</option>
+            </select>
         </div>
         <div class='col-md-2'></div>
     </div>
-    {{#each offers}}
-        {{> offerListing}}
-    {{/each}}
+   <!--  {{#if useOffer}}
+    <div class='row'>
+        <div class='col-md-4'>Offer product: {{productId}}</div>
+        <div class='col-md-2'>Offer delay: {{expiryDate}}</div>
+        <div class='col-md-2'>Offer discount: {{offerDiscount}}</div>
+    </div>
+    {{/if}} -->
     <div class='row'>
         <div class='col-md-4'>
             <button class='btn btn-primary btn-block' id='update'>Update</button>

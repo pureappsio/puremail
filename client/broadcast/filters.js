@@ -1,23 +1,26 @@
 Template.filters.rendered = function() {
 
-    // Get lists
-    var lists = Lists.find({}).fetch();
+    // // Get lists
+    // var lists = Lists.find({}).fetch();
 
-    // Set options
-    for (i in lists) {
-        $('#select-option-0').append($('<option>', {
-            value: lists[i]._id,
-            text: lists[i].name
-        }));
-    }
+    // // Set options
+    // for (i in lists) {
+    //     $('#select-option-0').append($('<option>', {
+    //         value: lists[i]._id,
+    //         text: lists[i].name
+    //     }));
+    // }
 
-    Session.set('filterIndex', 0);
+    Session.set('filterIndex', 1);
 }
 
 Template.filters.helpers({
 
     filteredCustomers: function() {
         return Session.get('filteredCustomers');
+    },
+    lists: function() {
+        return Lists.find({});
     }
 
 });
@@ -36,7 +39,7 @@ Template.filters.events({
         console.log(criteria);
 
         // Get list ID
-        var listId = $('#select-option-0 :selected').val();
+        var listId = $('#list :selected').val();
 
         // Clean options
         $('#select-option-' + index).find('option').remove().end();
@@ -57,7 +60,7 @@ Template.filters.events({
 
         }
 
-        if (criteria == 'coming') {
+        if (criteria == 'coming' || criteria == 'notcoming') {
 
 
             $('#select-option-' + index).append($('<option>', {
@@ -65,14 +68,14 @@ Template.filters.events({
                 text: "blog"
             }));
 
-        }
-
-        if (criteria == 'notcoming') {
-
+            $('#select-option-' + index).append($('<option>', {
+                value: 'landing',
+                text: "ads"
+            }));
 
             $('#select-option-' + index).append($('<option>', {
-                value: 'blog',
-                text: "blog"
+                value: 'social',
+                text: "social"
             }));
 
         }
@@ -183,8 +186,7 @@ Template.filters.events({
         Session.set('filterIndex', index);
 
         newFilter = '<div class="row"><div class="col-md-3">And</div>';
-        newFilter += '<div class="col-md-2"><select id="select-criteria-' + index + '" class="form-control select-criteria"><option value="subscribed">subscribed to</option>';
-        newFilter += "<option value='notsubscribed'>not subscribed to</option>";
+        newFilter += '<div class="col-md-2"><select id="select-criteria-' + index + '" class="form-control select-criteria">';
         newFilter += "<option value='coming'>coming from</option>";
         newFilter += "<option value='notcoming'>not coming from</option>";
         newFilter += "<option value='opened'>opened at least</option>";
@@ -201,16 +203,22 @@ Template.filters.events({
 
         $('#other-filters').append(newFilter);
 
-        // Get lists
-        var lists = Lists.find({}).fetch();
+        $('#select-option-' + index).append($('<option>', {
+            value: 'blog',
+            text: "blog"
+        }));
 
-        // Set options
-        for (i in lists) {
-            $('#select-option-' + index).append($('<option>', {
-                value: lists[i]._id,
-                text: lists[i].name
-            }));
-        }
+        $('#select-option-' + index).append($('<option>', {
+            value: 'landing',
+            text: "ads"
+        }));
+
+        $('#select-option-' + index).append($('<option>', {
+            value: 'social',
+            text: "social"
+        }));
+
+
 
     },
     'click #select': function() {
@@ -219,19 +227,22 @@ Template.filters.events({
         index = Session.get('filterIndex');
         filters = [];
 
-        for (i = 0; i <= index; i++) {
+        for (i = 1; i <= index; i++) {
 
-            filter = {
-                criteria: $('#select-criteria-' + i).val(),
-                option: $('#select-option-' + i + ' :selected').val()
+            if ($('#select-criteria-' + i).val()) {
+                filter = {
+                    criteria: $('#select-criteria-' + i).val(),
+                    option: $('#select-option-' + i + ' :selected').val()
+                }
+
+                filters.push(filter);
             }
 
-            filters.push(filter);
         }
         console.log(filters);
 
         // Filter subscribers
-        listId = $('#select-option-0 :selected').val();
+        listId = $('#list :selected').val();
         Meteor.call('getNumberFilteredSubscribers', listId, filters, function(err, filteredCustomers) {
 
             // Set session variable

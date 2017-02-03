@@ -1,31 +1,19 @@
 <template name='listEmail'>
-
-<div class='row'>
-
-  <div class='col-md-4'><a href='{{pathFor "subscriberDetails"}}'>{{email}}</a></div>
-  <div class='col-md-5'>
-    {{#if isNotConfirmed}}
-      <span class="label label-danger">EMAIL UNCONFIRMED</span>
-    {{/if}}
-    {{#if isCustomer}}
-      <span class="label label-primary">DIRECT CUSTOMER</span>
-    {{/if}}
-    {{#if isUser}}
-      <span class="label label-primary">APP USER</span>
-    {{/if}}
-    {{#if isKindleCustomer}}
-      <span class="label label-primary">KINDLE CUSTOMER</span>
-    {{/if}}
-    {{#each interests}}
-      {{> interest}}
-    {{/each}}
-
-    <span class="label {{originColor}}">{{originName}}</span>
-
-  </div>
-  <div class='col-md-2'><span class="label label-info">{{fromDate date_added}}</span></div>
-  <div class='col-md-1 delete'><span class="glyphicon glyphicon-remove glyph-delete" aria-hidden="true"></span></div>
-
-</div>
-
+    <div class='row'>
+<!--         <div class='col-md-2'>{{_id}}</div>
+ -->        <div class='col-md-3'>
+            <a href='{{pathFor "subscriberDetails"}}'>{{email}}</a>
+        </div>
+        <div class='col-md-3'>
+            {{#if isNotConfirmed}}
+            <span class="label label-danger">EMAIL UNCONFIRMED</span> {{/if}} {{#if isCustomer}}
+            <span class="label label-primary">DIRECT CUSTOMER</span> {{/if}} {{#if isUser}}
+            <span class="label label-primary">APP USER</span> {{/if}} {{#if isKindleCustomer}}
+            <span class="label label-primary">KINDLE CUSTOMER</span> {{/if}} {{#each interests}} {{> interest}} {{/each}}
+            <span class="label {{originColor}}">{{originName}}</span>
+        </div>
+        <div class='col-md-3'>{{#each tags}}{{> interest}}{{/each}}</div>
+        <div class='col-md-2'><span class="label label-info">{{fromDate date_added}}</span></div>
+        <div class='col-md-1 delete'><span class="glyphicon glyphicon-remove glyph-delete" aria-hidden="true"></span></div>
+    </div>
 </template>

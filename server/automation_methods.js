@@ -2,8 +2,22 @@
 import sendgridModule from 'sendgrid';
 const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
+var cheerio = Npm.require("cheerio");
+
 Meteor.methods({
 
+    deleteCondition: function(conditionId) {
+
+        Conditions.remove(conditionId);
+
+    },
+    addCondition: function(condition) {
+
+        console.log(condition);
+
+        Conditions.insert(condition);
+
+    },
     updateConditionalEmail: function(email) {
 
         // Edit 
@@ -98,11 +112,15 @@ Meteor.methods({
 
         console.log('Conditional email, checking if branching');
 
+        // Get data
+        var list = Lists.findOne(subscriber.listId);
+        var user = Meteor.users.findOne(subscriber.ownerId);
+
         // Don't branch by default
         var branchToSequence = false;
 
         // Conditions
-        conditions = newEmail.conditions;
+        conditions = Conditions.find({emailId: newEmail._id}).fetch();
         console.log('Conditions: ');
         console.log(conditions);
 
@@ -111,9 +129,11 @@ Meteor.methods({
 
             if (conditions[c].criteria == 'bought') {
 
-                if (subscriber.products) {
-                    for (p = 0; p < subscriber.products.length; p++) {
-                        if (subscriber.products[p].name == conditions[c].parameter) {
+                var purchasedProducts = Meteor.call('getPurchasedProducts', subscriber);
+
+                if (purchasedProducts.length > 0) {
+                    for (p = 0; p < purchasedProducts.length; p++) {
+                        if (purchasedProducts[p] == conditions[c].parameter) {
                             branchToSequence = true;
                         }
                     }
@@ -125,10 +145,12 @@ Meteor.methods({
 
                 branchToSequence = true;
 
-                if (subscriber.products) {
+                var purchasedProducts = Meteor.call('getPurchasedProducts', subscriber);
 
-                    for (p = 0; p < subscriber.products.length; p++) {
-                        if (subscriber.products[p].name == conditions[c].parameter) {
+                if (purchasedProducts.length > 0) {
+
+                    for (p = 0; p < purchasedProducts.length; p++) {
+                        if (purchasedProducts[p] == conditions[c].parameter) {
                             branchToSequence = false;
                         }
                     }
@@ -144,6 +166,8 @@ Meteor.methods({
             console.log('Branching to other sequence');
 
             if (newEmail.branchDestination == 'end') {
+
+                console.log('Ending there');
 
                 // Update subscriber with no sequence
                 Subscribers.update(subscriber._id, { $set: { "sequenceEmail": null } });
@@ -183,6 +207,11 @@ Meteor.methods({
 
         var sequence = Sequences.findOne(scheduled.sequenceId);
 
+        // Get data
+        var list = Lists.findOne(scheduled.listId);
+        var subscriber = Subscribers.findOne({ listId: scheduled.listId, email: scheduled.to });
+        var user = Meteor.users.findOne(scheduled.ownerId);
+
         // Check if simple destination or branch
         if (sequence.destination.action) {
 
@@ -198,8 +227,8 @@ Meteor.methods({
             // Branching
             var destinations = sequence.destination;
 
-            console.log('Destinations: ');
-            console.log(destinations);
+            // console.log('Destinations: ');
+            // console.log(destinations);
 
             // Match subscriber with destination
             var matchIndex = -1;
@@ -261,6 +290,14 @@ Meteor.methods({
     },
     addNextAutomationEmail: function(scheduled) {
 
+        console.log('Adding new automation email');
+        // console.log(scheduled);
+
+        // Get data
+        var list = Lists.findOne(scheduled.listId);
+        var subscriber = Subscribers.findOne({ listId: scheduled.listId, email: scheduled.to });
+        var user = Meteor.users.findOne(scheduled.ownerId);
+
         // Move to next order in sequence
         order = scheduled.sequenceEmail + 1;
 
@@ -271,7 +308,7 @@ Meteor.methods({
             var newEmail = Automations.findOne({ sequenceId: scheduled.sequenceId, order: order });
 
             // Conditional email ?
-            if (newEmail.conditions) {
+            if (Conditions.findOne({emailId: newEmail._id})) {
 
                 // Plan conditional email
                 Meteor.call('addConditionalEmail', newEmail, subscriber);
@@ -279,6 +316,7 @@ Meteor.methods({
             } else {
 
                 console.log('Normal email, going to next email');
+                // console.log(newEmail);
 
                 // Add to scheduler
                 Meteor.call('addAutomationEmail', newEmail, subscriber, list, user);
@@ -341,6 +379,24 @@ Meteor.methods({
 
                 console.log('Sending email to ' + scheduled.to + ' of list ' + list.name);
 
+                // Check if subscriber has offers
+                if (Offers.findOne({ subscriberId: subscriber._id })) {
+
+                    // Load raw HTML
+                    $ = cheerio.load(scheduled.text);
+
+                    // Process links
+                    $('a').each(function(i, elem) {
+                        // Check if it's not the unsubscribe link
+                        if (($(elem)[0].attribs.href).indexOf('unsubscribe') == -1) {
+                            $(elem)[0].attribs.href += '?subscriber=' + subscriber._id;
+                        }
+                    });
+
+                    scheduled.text = $.html();
+
+                }
+
                 // Build mail
                 var helper = sendgridModule.mail;
                 from_email = new helper.Email(list.brandEmail);
@@ -369,24 +425,24 @@ Meteor.methods({
                 }
 
                 // Add Google Analytics data
-                tracking_settings = new helper.TrackingSettings()
-                if (subscriber.origin) {
-                    if (subscriber.origin == 'landing') {
-                        source = "facebook";
-                    }
-                    if (subscriber.origin == 'blog') {
-                        source = "blog";
-                    }
-                } else {
-                    source = "blog";
-                }
-                ganalytics = new helper.Ganalytics(true, source, "email");
-                tracking_settings.setGanalytics(ganalytics)
-                mail.addTrackingSettings(tracking_settings)
+                // tracking_settings = new helper.TrackingSettings()
+                // if (subscriber.origin) {
+                //     if (subscriber.origin == 'landing') {
+                //         source = "facebook";
+                //     }
+                //     if (subscriber.origin == 'blog') {
+                //         source = "blog";
+                //     }
+                // } else {
+                //     source = "blog";
+                // }
+                // ganalytics = new helper.Ganalytics(true, source, "email");
+                // tracking_settings.setGanalytics(ganalytics)
+                // mail.addTrackingSettings(tracking_settings)
 
                 // Send
                 var requestBody = mail.toJSON()
-                console.log(requestBody);
+                    // console.log(requestBody);
                 var request = sendgrid.emptyRequest()
                 request.method = 'POST'
                 request.path = '/v3/mail/send'
@@ -396,7 +452,7 @@ Meteor.methods({
                 if (Meteor.settings.mode != 'demo') {
                     sendgrid.API(request, function(err, response) {
                         if (response.statusCode != 202) {
-                            console.log(response.body);
+                            console.log('Automation email sent!');
                         }
                     });
                 }
@@ -463,6 +519,7 @@ Meteor.methods({
     updateRule: function(email) {
 
         // Update rule
+        console.log(email);
         Automations.update(email._id, { $set: email });
 
     },

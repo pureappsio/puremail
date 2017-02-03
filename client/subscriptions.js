@@ -5,6 +5,7 @@ Tracker.autorun(function() {
     Meteor.subscribe('userLists');
     Meteor.subscribe('userSegments');
     Meteor.subscribe('userInterests');
+    Meteor.subscribe('userConditions');
     Meteor.subscribe('userAutomations');
     Meteor.subscribe('userBroadcasts');
     Meteor.subscribe('userScheduled');

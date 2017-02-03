@@ -1,5 +1,20 @@
 Meteor.methods({
 
+    inJsonArray: function(value, array, field) {
+
+        var found = false;
+
+        for (r in array) {
+
+            if (array[r][field] == value) {
+                found = true;
+            }
+
+        }
+
+        return found;
+
+    },
     addOffer: function(offer) {
 
         console.log(offer);
@@ -13,7 +28,7 @@ Meteor.methods({
 
     },
     getLatestSubscribers: function(listId) {
-        return Subscribers.find({ listId: listId }, { sort: { date_added: -1 }, limit: 50 }).fetch();
+        return Subscribers.find({ listId: listId }, { sort: { date_added: -1 }, limit: 100 }).fetch();
     },
     getMode: function() {
 

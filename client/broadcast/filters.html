@@ -1,32 +1,18 @@
 <template name='filters'>
-
-<div class='row'>
-
-  <div class='col-md-3'>Select people who</div>
-  <div class='col-md-2'>
-	<select id='select-criteria-0' class="form-control">
-    <option value='subscribed'>subscribed to</option>
-    <option value='notsubscribed'>not subscribed to</option>
-	  <!-- <option value='bought'>bought</option>
-	  <option value='notbought'>didn't buy</option>
-    <option value='are'>are</option> -->
-    </select>
-  </div>
-
-  <div class='col-md-3'>
-    <select id='select-option-0' class="form-control">
-    </select>
-  </div>
-
-  <div class='col-md-1'>
-    <button id='plus-filter' class='btn btn-primary'>+</button>
-  </div>
-
-  <div class='col-md-1'><button id='select' class='btn btn-block btn-warning'>Select</button></div>
-  <div class='col-md-2'>{{filteredCustomers}} subscribers</div>
-
-</div>
-
-<div id='other-filters'></div>
-
+    <div class='row'>
+        <div class='col-md-3'>Select list:</div>
+        <div class='col-md-5'>
+            <select id='list' class="form-control">
+                {{#each lists}}{{> listOption}}{{/each}}
+            </select>
+        </div>
+        <div class='col-md-1'>
+            <button id='plus-filter' class='btn btn-primary'>+</button>
+        </div>
+        <div class='col-md-1'>
+            <button id='select' class='btn btn-block btn-warning'>Select</button>
+        </div>
+        <div class='col-md-2'>{{filteredCustomers}} subscribers</div>
+    </div>
+    <div id='other-filters'></div>
 </template>

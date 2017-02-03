@@ -20,9 +20,14 @@ Template.rule.events({
 
 Template.rule.helpers({
 
+  isOffer: function() {
+    if (this.useOffer) {
+      return true;
+    }
+  },
   isConditional: function() {
-    if (this.conditions) {
-      return 'c';
+    if (Conditions.findOne({emailId: this._id})) {
+      return true;
     }
   },
   sequenceName: function() {

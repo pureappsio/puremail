@@ -5,7 +5,7 @@ if(Meteor.isServer) {
 	});
 
 	Meteor.publish("userSubscribers", function () {
-	  return Subscribers.find({ownerId: this.userId}, {sort: {date_added: -1}, limit: 50});
+	  return Subscribers.find({ownerId: this.userId}, {sort: {date_added: -1}, limit: 100});
 	});
 
 	Meteor.publish("userLists", function () {
@@ -22,6 +22,10 @@ if(Meteor.isServer) {
 
 	Meteor.publish("userAutomations", function () {
 		return Automations.find({ownerId: this.userId});
+	});
+
+	Meteor.publish("userConditions", function () {
+		return Conditions.find({ownerId: this.userId});
 	});
 
 	Meteor.publish("userScheduled", function () {

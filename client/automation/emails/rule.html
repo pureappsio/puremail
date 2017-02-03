@@ -1,20 +1,18 @@
 <template name='rule'>
-
-<div class='row'>
-
-  <div class='col-md-1'>
-    <button class='btn btn-default plus order-button'>+</button>
-    <button class='btn btn-default minus order-button'>-</button>
-  </div>
-
-  <div class='col-md-1'>{{order}}</div>
-  <div class='col-md-5'>{{emailName}} {{isConditional}}</div>
-  <div class='col-md-3'>Send email after {{time}} {{period}}</div>
-  <div class='col-md-2'>
-    <a href='{{pathFor "editRule"}}'><button class='btn btn-primary label-space'>Edit</button></a>
-    <button class='btn btn-danger delete-rule label-space'>Delete</button>
-  </div>
-
-</div>
-
+    <div class='row'>
+        <div class='col-md-1'>
+            <button class='btn btn-default plus order-button'>+</button>
+            <button class='btn btn-default minus order-button'>-</button>
+        </div>
+        <div class='col-md-1'>{{order}}</div>
+        <div class='col-md-5'>{{emailName}} {{#if isConditional}}<span class="label label-primary">CONDITIONAL</span>{{/if}} {{#if isOffer}}<span class="label label-success">OFFER</span>{{/if}}
+        </div>
+        <div class='col-md-3'>Send email after {{time}} {{period}}</div>
+        <div class='col-md-2'>
+            <a href='{{pathFor "editRule"}}'>
+                <button class='btn btn-primary label-space'>Edit</button>
+            </a>
+            <button class='btn btn-danger delete-rule label-space'>Delete</button>
+        </div>
+    </div>
 </template>

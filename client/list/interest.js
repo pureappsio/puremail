@@ -1,7 +1,7 @@
 Template.interest.helpers({
 
   printInterest: function() {
-    return (this.name).toUpperCase();
+    return (Interests.findOne(this).name).toUpperCase();
   }
 
 });

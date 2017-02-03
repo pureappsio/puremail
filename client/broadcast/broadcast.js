@@ -15,13 +15,15 @@ Template.broadcast.rendered = function() {
 
 }
 
-Template.broadcast.helpers({
+// Template.broadcast.helpers({
 
-  broadcasts: function() {
-    return Broadcasts.find({});
-  }
+//   broadcasts: function() {
+//     if (Session.get('broadcastListId')) {
+//       return Broadcasts.find({});
+//     }
+//   }
 
-});
+// });
 
 Template.broadcast.events({
 
@@ -30,13 +32,13 @@ Template.broadcast.events({
     // Get email text & subject
     var emailText = $('#email-text').summernote('code');
     var emailSubject = $('#email-subject').val();
-    var listId = $('#select-option-0 :selected').val();
+    var listId = $('#list :selected').val();
 
     // Get all filters
     index = Session.get('filterIndex');
     filters = [];
 
-    for (i = 0; i <= index; i ++) {
+    for (i = 2; i <= index; i ++) {
 
       filter = {
         criteria: $('#select-criteria-' + i).val(),
@@ -78,7 +80,7 @@ Template.broadcast.events({
     var emailText = $('#email-text').summernote('code');
     var emailSubject = $('#email-subject').val();
     var to = $('#test-to').val();
-    var listId = $('#select-option-0 :selected').val();
+    var listId = $('#list :selected').val();
 
     // Build email data
     testEmailData = {
@@ -89,41 +91,6 @@ Template.broadcast.events({
 
     // Send email
     Meteor.call('sendTestEmail', listId, testEmailData);
-
-  },
-  'click #offer': function () {
-
-    // Grab details
-    var product = $('#select-product-offer :selected').text();
-    var productId = $('#select-product-offer :selected').val();
-    var discount = $('#discount').val();
-
-    // Get product link
-    Meteor.call('getProductData', productId, function(err, productData) {
-
-      Meteor.call('createOffer', productId, discount, Meteor.user(), function(err, offer) {
-
-        // Generate email text
-        emailText = '<p>Hello,</p>';
-        emailText += '<p>Thanks for purchasing from us in the past! ';
-        emailText += 'Today, I want to reward you with an exclusive offer on ' + product + '. ';
-        emailText += 'I am giving you a ' + discount + '% discount on this product. ';
-        emailText += 'You can access your exclusive offer by following the link below:</p>';
-        emailText += '<p><a href="' + productData.short_url + '/' + offer.name + '">' + product + '</a></p>';
-        emailText += '<p>Cheers,<br>';
-        emailText += Meteor.user().profile.userName + '<br>';
-        emailText += Meteor.user().profile.brandName + '</p>';
-
-        // Generate email subject
-        emailSubject = 'Exclusive offer on ' + Meteor.user().profile.brandName + ' products';
-
-        // Assign email text & subject
-        $('#email-text').code(emailText);
-        $('#email-subject').val(emailSubject);
-
-      });
-
-    });
 
   }
 

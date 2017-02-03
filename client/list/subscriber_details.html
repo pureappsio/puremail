@@ -2,7 +2,7 @@
     <h3>General Details</h3>
     <div class='row'>
         <div class='col-md-3'>Subscriber email:</div>
-        <div class='col-md-3'>{{email}}</div>
+        <div class='col-md-3'>{{subscriber.email}}</div>
     </div>
     <div class='row'>
         <div class='col-md-3'>Last updated:</div>
@@ -17,25 +17,29 @@
         <div class='col-md-3'>Number products bought:</div>
         <div class='col-md-1'>{{nb_products}}</div>
     </div>
-    <div class='row'>
+    <!--     <div class='row'>
         <div class='col-md-3'>Products:</div>
         <div class='col-md-3'>{{products}}</div>
-    </div>
+    </div> -->
+    {{#if interests}}
     <div class='row'>
         <div class='col-md-3'>Interests:</div>
-        {{#each interests}} {{> interest}} {{/each}}
+        <div class='col-md-3'>{{#each tags}}{{> interest}}{{/each}}</div>
     </div>
+    {{/if}}
     <div class='row'>
         <div class='col-md-3'>Origin:</div>
-        <div class='col-md-3'>{{origin}}</div>
+        <div class='col-md-3'>{{subscriber.origin}}</div>
     </div>
+    {{#if offers}}
     <div class='row'>
         <div class='col-md-3'>Offers:</div>
-        <div class='col-md-3'>{{offers}}</div>
+        <div class='col-md-3'>{{#each offers}}{{> offerSubscriber}}{{/each}}</div>
     </div>
+    {{/if}}
     <div class='row'>
         <div class='col-md-3'>Status:</div>
-        <div class='col-md-3'>{{status}}</div>
+        <div class='col-md-3'>{{subscriber.status}}</div>
     </div>
     <h3>Sequences</h3>
     <div class='row'>
@@ -56,5 +60,6 @@
             <button id='assign-sequence' class='btn btn-success btn-block'>Assign Sequence</button>
         </div>
     </div>
-    <h3>Email History</h3> {{#each mailHistory}} {{> historyElement}} {{/each}}
+    {{#if mailHistory}}
+    <h3>Email History</h3> {{#each mailHistory}} {{> historyElement}} {{/each}} {{/if}}
 </template>

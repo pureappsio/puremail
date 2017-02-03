@@ -89,7 +89,7 @@ Meteor.methods({
 
             // Send
             var requestBody = mail.toJSON()
-            // console.log(requestBody.personalizations[0]);
+                // console.log(requestBody.personalizations[0]);
             var request = sendgrid.emptyRequest()
             request.method = 'POST'
             request.path = '/v3/mail/send'
@@ -181,205 +181,149 @@ Meteor.methods({
     filterSubscribers: function(listId, filters) {
 
         // Get all subscribers
-        var subscribers = Subscribers.find({ listId: listId }).fetch();
+        var subscribers = Subscribers.find().fetch();
 
         // Filter
         var filteredCustomers = [];
 
-        for (i = 0; i < subscribers.length; i++) {
+        // Pre-load data
+        for (c in filters) {
 
-            currentSubscriber = subscribers[i];
-            addSubscriberArray = [];
+            if (filters[c].criteria == 'boughtproduct' || filters[c].criteria == 'notboughtproduct') {
 
-            for (f = 0; f < filters.length; f++) {
-
-                criteria = filters[f].criteria;
-                option = filters[f].option;
-
-                if (criteria == 'subscribed') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.listId == option) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'notsubscribed') {
-
-                    addSubscriberArray[f] = true;
-
-                    if (currentSubscriber.listId == option) {
-                        addSubscriberArray[f] = false;
-                    }
-
-                }
-
-                if (criteria == 'opened') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.opened >= option) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'clicked') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.clicked >= option) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'coming') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.origin == option) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'notcoming') {
-
-                    addSubscriberArray[f] = true;
-
-                    if (currentSubscriber.origin == option) {
-                        addSubscriberArray[f] = false;
-                    }
-
-                }
-
-                if (criteria == 'bought') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.nb_products >= option) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'boughtless') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.nb_products <= option || !currentSubscriber.nb_products) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                }
-
-                if (criteria == 'boughtproduct') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (currentSubscriber.products) {
-                        for (j = 0; j < currentSubscriber.products.length; j++) {
-                            if (currentSubscriber.products[j] == option) {
-                                addSubscriberArray[f] = true;
-                            }
-                        }
-                    }
-                }
-
-                if (criteria == 'notboughtproduct') {
-
-                    addSubscriberArray[f] = true;
-
-                    if (currentSubscriber.products) {
-                        for (j = 0; j < currentSubscriber.products.length; j++) {
-                            if (currentSubscriber.products[j] == option) {
-                                addSubscriberArray[f] = false;
-                            }
-                        }
-                    }
-                }
-
-                if (criteria == 'are') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (option == 'customers' && currentSubscriber.nb_products >= 1) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                    if (option == 'notcustomers') {
-                        if (currentSubscriber.nb_products == 0 || !currentSubscriber.nb_products) {
-                            addSubscriberArray[f] = true
-                        }
-                    }
-
-                    if (option == 'sequence' && currentSubscriber.sequenceId != null) {
-                        addSubscriberArray[f] = true;
-                    }
-
-                    if (option == 'notsequence') {
-                        if (currentSubscriber.sequenceId == null || !currentSubscriber.sequenceId) {
-                            addSubscriberArray[f] = true
-                        }
-                    }
-
-                }
-
-                if (criteria == 'interested') {
-
-                    addSubscriberArray[f] = false;
-                    if (currentSubscriber.tags) {
-                        for (j = 0; j < currentSubscriber.tags.length; j++) {
-                            if (currentSubscriber.tags[j] == option) {
-                                addSubscriberArray[f] = true;
-                            }
-                        }
-                    }
-
-                }
-
-                if (criteria == 'plan') {
-
-                    addSubscriberArray[f] = false;
-
-                    if (option == 'yes') {
-
-                        if (currentSubscriber.plan) {
-                            addSubscriberArray[f] = true;
-                        } else {
-                            addSubscriberArray[f] = false;
-                        }
-
-                    }
-                    if (option == 'no') {
-
-                        if (currentSubscriber.plan) {
-                            addSubscriberArray[f] = false;
-                        } else {
-                            addSubscriberArray[f] = true;
-                        }
-
-                    }
-
-                }
+                filters[c].data = Meteor.call('getCustomersProduct', filters[c].option, listId);
 
             }
 
-            addSubscriber = true;
-            for (c = 0; c < addSubscriberArray.length; c++) {
-                addSubscriber = addSubscriber * addSubscriberArray[c];
-            }
+            if (filters[c].option == 'customers' || filters[c].option == 'notcustomers') {
 
-            if (addSubscriber) {
-                filteredCustomers.push(currentSubscriber);
+                filters[c].data = Meteor.call('getCustomersEmails', listId);
             }
 
         }
 
-        return filteredCustomers;
+        // Filter with query
+        var query = { listId: listId };
+
+        for (f = 0; f < filters.length; f++) {
+
+            criteria = filters[f].criteria;
+            option = filters[f].option;
+
+            if (criteria == 'opened') {
+
+                query.opened = {$gte: option};
+
+            }
+
+            if (criteria == 'clicked') {
+
+               query.clicked = {$gte: option};
+
+            }
+
+            if (criteria == 'coming') {
+
+                query.origin = option;
+
+            }
+
+            if (criteria == 'notcoming') {
+
+                query.origin = { $ne: option };
+
+            }
+
+            if (criteria == 'boughtproduct') {
+
+                query.email = { $in: filters[f].data };
+
+            }
+
+            if (criteria == 'notboughtproduct') {
+
+                query.email = { $nin: filters[f].data };
+            }
+
+            if (criteria == 'are') {
+
+
+                if (option == 'sequence') {
+
+                    query.sequenceId = { $ne: null };
+
+                }
+
+                if (option == 'notsequence') {
+
+                    query.sequenceId = null;
+
+                }
+
+                if (option == 'customers') {
+
+                    query.email = { $in: filters[f].data };
+
+                }
+
+                if (option == 'notcustomers') {
+
+                    query.email = { $nin: filters[f].data };
+
+                }
+
+            }
+
+            if (criteria == 'interested') {
+
+                query.tags = option;
+
+            }
+
+            if (criteria == 'plan') {
+
+                if (option == 'yes') {
+
+                    query.option = { $exists: true };
+
+                }
+                if (option == 'no') {
+
+                    query.option = { $exists: true };
+
+                }
+
+            }
+        }
+
+        var subscribers = Subscribers.find(query).fetch();
+
+        return subscribers;
+
+        //         if (criteria == 'bought') {
+
+        //             addSubscriberArray[f] = false;
+
+        //             var nb_products = Meteor.call('getNumberPurchases', currentSubscriber);
+
+        //             if (nb_products >= option) {
+        //                 addSubscriberArray[f] = true;
+        //             }
+
+        //         }
+
+        //         if (criteria == 'boughtless') {
+
+        //             addSubscriberArray[f] = false;
+
+        //             var nb_products = Meteor.call('getNumberPurchases', currentSubscriber);
+
+        //             if (nb_products <= option) {
+        //                 addSubscriberArray[f] = true;
+        //             }
+
+        //         }
+
 
     }
 

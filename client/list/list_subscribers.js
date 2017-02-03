@@ -78,13 +78,19 @@ Template.listSubscribers.events({
         var email = $('#find-subscriber-email').val();
 
         // Search
-        Session.set('subscriberSearch', email);
+        Meteor.call('getSubscribers', { email: email, listId: this._id }, function(err, data) {
+
+            Session.set('subscribers', data);
+
+        });
 
     },
     'click #show-all': function() {
 
         // Show
-        Session.set('subscriberSearch', "all");
+        Meteor.call('getLatestSubscribers', this._id, function(err, data) {
+            Session.set('subscribers', data);
+        });
 
     },
     'click #remove-subscribers': function() {
@@ -104,7 +110,7 @@ Template.listSubscribers.events({
         // Get value of all category filters
         for (i = 0; i < interests.length; i++) {
             if ($("#" + interests[i]._id).is(':checked')) {
-                selectedInterests.push(interests[i].name);
+                selectedInterests.push(interests[i]._id);
             }
         }
 

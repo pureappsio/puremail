@@ -1,5 +1,10 @@
 Meteor.methods({
 
+  getSequences: function(listId) {
+
+    return Sequences.find({listId: listId}).fetch();
+
+  },
   moveNextEmail: function(subscriberId) {
 
     // Get subscriber
