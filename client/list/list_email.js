@@ -1,5 +1,16 @@
 Template.listEmail.helpers({
 
+    locationStyle: function() {
+
+        if (this.location) {
+
+            return 'flag-icon-' + (this.location).toLowerCase();
+
+        } else {
+            return 'flag-icon-us';
+        }
+
+    },
     fromDate: function() {
         return moment(this.date_added).fromNow();
     },

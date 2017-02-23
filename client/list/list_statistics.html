@@ -1,8 +1,23 @@
 <template name='listStatistics'>
 
-<h3>Statistics for list: {{name}}</h3>
+<!-- <h3>Statistics for list: {{name}}</h3>
+ -->
+<h3>Past Broadcast Emails for list: {{name}}</h3>
 
 <div class='row row-title'>
+
+  <div class='col-md-5'>Subject</div>
+  <div class='col-md-2'>Sent</div>
+  <div class='col-md-2'>Opened</div>
+  <div class='col-md-2'>Clicked</div>
+
+</div>
+
+{{#each broadcasts}}
+  {{> broadcastDetails}}
+{{/each}}
+
+<!-- <div class='row row-title'>
 
   <div class='col-md-1'>Sequence</div>
   <div class='col-md-3'>Email Subject</div>
@@ -14,6 +29,6 @@
 
 {{#each getRules}}
   {{> ruleStatistics}}
-{{/each}}
+{{/each}} -->
 
 </template>

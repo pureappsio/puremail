@@ -5,6 +5,20 @@ const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 // Methods
 Meteor.methods({
 
+    getUserLocation: function(httpHeaders) {
+
+        // console.log(httpHeaders);
+
+        if (httpHeaders['cf-ipcountry']) {
+            country_code = httpHeaders['cf-ipcountry'];
+        } else {
+            country_code = 'US';
+        }
+
+        return country_code;
+
+    },
+
     getSubscribers: function(query) {
         return Subscribers.find(query).fetch();
     },
@@ -196,10 +210,15 @@ Meteor.methods({
                 var firstEmail = Automations.findOne({ sequenceId: subscriber.sequenceId, order: 1 });
 
                 // Set email
-                Subscribers.update(subscriber._id, { $set: { "sequenceEmail": firstEmail._id } });
+                if (firstEmail) {
 
-                // Add email to scheduler
-                Meteor.call('addAutomationEmail', firstEmail, subscriber, list, user);
+                    Subscribers.update(subscriber._id, { $set: { "sequenceEmail": firstEmail._id } });
+
+                    // Add email to scheduler
+                    Meteor.call('addAutomationEmail', firstEmail, subscriber, list, user);
+
+                }
+
 
             }
 
@@ -312,6 +331,10 @@ Meteor.methods({
             subscriber.origin = data.origin;
         }
 
+        if (data.location) {
+            subscriber.location = data.location;
+        }
+
         if (data.sequence) {
             subscriber.sequenceId = data.sequence;
         }
@@ -389,10 +412,14 @@ Meteor.methods({
                     var firstEmail = Automations.findOne({ sequenceId: subscriber.sequenceId, order: 1 });
 
                     // Set email
-                    Subscribers.update(isSubscriber._id, { $set: { "sequenceEmail": firstEmail._id } });
+                    if (firstEmail) {
 
-                    // Add email to scheduler
-                    Meteor.call('addAutomationEmail', firstEmail, isSubscriber, list, user);
+                        Subscribers.update(isSubscriber._id, { $set: { "sequenceEmail": firstEmail._id } });
+
+                        // Add email to scheduler
+                        Meteor.call('addAutomationEmail', firstEmail, isSubscriber, list, user);
+                    }
+
 
                 }
 
@@ -408,7 +435,9 @@ Meteor.methods({
                     var firstEmail = Automations.findOne({ sequenceId: sequence._id, order: 1 });
 
                     // Add email
-                    Meteor.call('addAutomationEmail', firstEmail, subscriber, subscriber.listId, user);
+                    if (firstEmail) {
+                        Meteor.call('addAutomationEmail', firstEmail, subscriber, subscriber.listId, user);
+                    }
 
                 }
 
@@ -422,7 +451,7 @@ Meteor.methods({
             subscriber.confirmed = false;
             subscriber.status = 'new';
             console.log('New subscriber');
-            // console.log(subscriber);
+            console.log(subscriber);
 
             // Insert
             var subscriberId = Subscribers.insert(subscriber);
@@ -440,6 +469,10 @@ Meteor.methods({
             if (subscriber.origin) {
                 stat.origin = subscriber.origin;
             }
+            if (subscriber.location) {
+                stat.location = subscriber.location;
+            }
+
             Stats.insert(stat);
 
             if (data.confirmed || (list.skipConfirmation == 'enabled')) {
@@ -507,8 +540,37 @@ Meteor.methods({
     },
     deleteSubscriber: function(id) {
 
+        // Get data
+        var subscriber = Subscribers.findOne(id); 
+        if (subscriber) {
+            var list = Lists.findOne(subscriber.listId);
+        }
+
         // Delete
         Subscribers.remove(id);
+
+        // Send notifications
+        if (list && subscriber && Integrations.findOne({ type: 'puremetrics' })) {
+
+            // Get integration
+            var integration = Integrations.findOne({ type: 'puremetrics' });
+
+            // Parameters
+            parameters = {
+                type: 'unsubscribed',
+                message: 'Unsubscription to the ' + list.name + ' email list'
+            };
+
+            // Add origin
+            if (subscriber.origin) {
+                parameters.origin = subscriber.origin;
+            }
+
+            // Post
+            HTTP.post('https://' + integration.url + '/api/notifications?key=' + integration.key, { params: parameters });
+
+        }
+
     },
     importSubscriber: function(data) {
 
