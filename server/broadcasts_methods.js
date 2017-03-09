@@ -4,9 +4,98 @@ const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
 Meteor.methods({
 
+    reSendBroadcasts: function() {
+
+        console.log('Re-sending broadcasts');
+
+        // Get all broadcasts that are not sent
+        var broadcasts = Broadcasts.find({ resent: false, otherSubject: { $exists: true } }).fetch();
+
+        for (i in broadcasts) {
+
+            // Check if it's time to send
+            var now = new Date();
+            var timeDifference = now.getTime() - (broadcasts[i].time).getTime();
+            var delay = 3 * 24 * 60 * 60 * 1000;
+            // var delay = 1000;
+
+            if (timeDifference > delay) {
+
+                var startTime = new Date();
+
+                console.log('Re-sending broadcast ' + broadcasts[i].subject);
+
+                // Get all people that didn't open
+                var delivered = Stats.find({
+                    broadcastId: broadcasts[i]._id,
+                    event: 'delivered'
+                }, { fields: { subscriberId: 1 } }).fetch();
+
+                var opened = Stats.find({
+                    broadcastId: broadcasts[i]._id,
+                    event: 'opened'
+                }, { fields: { subscriberId: 1 } }).fetch();
+
+                delivered = delivered.map(function(item) {
+                    return item.subscriberId;
+                })
+                opened = opened.map(function(item) {
+                    return item.subscriberId;
+                })
+
+                console.log('Delivered: ' + delivered.length);
+                console.log('Opened: ' + opened.length);
+
+                // Send again
+                filters = broadcasts[i].filters;
+                filters.push({
+                    criteria: 'resent',
+                    option: {
+                        delivered: delivered,
+                        opened: opened
+                    }
+                });
+                broadcasts[i].filters = filters;
+                // console.log(broadcasts[i]);
+
+                var list = Lists.findOne(broadcasts[i].listId);
+                var recipients = Meteor.call('filterSubscribers', broadcasts[i].listId, broadcasts[i].filters);
+                console.log('Recipients of second send: ' + recipients.length);
+
+                var scheduled = {
+
+                    name: list.userName,
+                    ownerId: broadcasts[i].ownerId,
+                    listId: broadcasts[i].listId,
+                    date: new Date(),
+                    from: list.userName + ' <' + list.brandEmail + '>',
+                    subject: broadcasts[i].otherSubject,
+                    filters: broadcasts[i].filters,
+                    text: broadcasts[i].text,
+                    type: 'broadcast',
+                    broadcastId: broadcasts[i]._id,
+                    recipients: recipients
+                };
+
+                var endTime = new Date();
+                var diff = (endTime.getTime() - startTime.getTime()) / 1000;
+                console.log('Compute time: ' + diff + ' s');
+
+                // Send
+                Meteor.call('sendBroadcast', scheduled);
+
+                // Mark as sent again
+                Broadcasts.update(broadcasts[i]._id, { $set: { resent: true } });
+
+            }
+
+
+        }
+
+    },
     sendBroadcast: function(scheduled) {
 
-        console.log('Sending brodcast');
+        console.log('Sending broadcast');
 
         // Get list
         var list = Lists.findOne(scheduled.listId);
@@ -210,15 +299,21 @@ Meteor.methods({
             criteria = filters[f].criteria;
             option = filters[f].option;
 
+            if (criteria == 'resent') {
+
+                query._id = { $in: option.delivered, $nin: option.opened };
+
+            }
+
             if (criteria == 'opened') {
 
-                query.opened = {$gte: option};
+                query.opened = { $gte: option };
 
             }
 
             if (criteria == 'clicked') {
 
-               query.clicked = {$gte: option};
+                query.clicked = { $gte: option };
 
             }
 
@@ -269,6 +364,26 @@ Meteor.methods({
                 if (option == 'notcustomers') {
 
                     query.email = { $nin: filters[f].data };
+
+                }
+
+                if (option == 'inactive') {
+
+                    var now = new Date();
+                    var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+                    query.lastClick = { $lt: filters[f].data };
+                    query.lastOpen = { $lt: filters[f].data };
+
+                }
+
+                if (option == 'active') {
+
+                    var now = new Date();
+                    var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+                    query.lastClick = { $gte: filters[f].data };
+                    query.lastOpen = { $gte: filters[f].data };
 
                 }
 

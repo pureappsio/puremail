@@ -194,6 +194,7 @@ Meteor.methods({
                     }
 
                     // Insert stat
+                    console.log(stat);
                     Stats.insert(stat);
 
                 }

@@ -25,6 +25,17 @@ SyncedCron.add({
 });
 
 SyncedCron.add({
+  name: 'Re-send not-opened broadcast emails',
+  schedule: function(parser) {
+    // parser is a later.parse object
+    return parser.text('every 1 hour');
+  },
+  job: function() {
+    Meteor.call('reSendBroadcasts');
+  }
+});
+
+SyncedCron.add({
   name: 'Delete not-confirmed subscribers',
   schedule: function(parser) {
     // parser is a later.parse object

@@ -145,6 +145,16 @@ Template.filters.events({
                 text: "not in a sequence"
             }));
 
+             $('#select-option-' + index).append($('<option>', {
+                value: 'inactive',
+                text: "inactive"
+            }));
+
+            $('#select-option-' + index).append($('<option>', {
+                value: 'active',
+                text: "active"
+            }));
+
         }
 
         if (criteria == 'interested') {

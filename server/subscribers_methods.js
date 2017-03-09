@@ -541,7 +541,7 @@ Meteor.methods({
     deleteSubscriber: function(id) {
 
         // Get data
-        var subscriber = Subscribers.findOne(id); 
+        var subscriber = Subscribers.findOne(id);
         if (subscriber) {
             var list = Lists.findOne(subscriber.listId);
         }
