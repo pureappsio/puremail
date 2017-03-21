@@ -289,6 +289,27 @@ Meteor.methods({
                 filters[c].data = Meteor.call('getCustomersEmails', listId);
             }
 
+            if (filters[c].criteria == 'received' || filters[c].criteria == 'notreceived') {
+
+                var stats = Stats.find({ event: 'delivered', broadcastId: filters[c].option }, { _id: 1 }).fetch();
+                filters[c].data = stats.map(function(a) {
+                    return a.subscriberId; });
+            }
+
+            if (filters[c].criteria == 'openedbroadcast' || filters[c].criteria == 'notopenedbroadcast') {
+
+                var stats = Stats.find({ event: 'opened', broadcastId: filters[c].option }, { _id: 1 }).fetch();
+                filters[c].data = stats.map(function(a) {
+                    return a.subscriberId; });
+            }
+
+            if (filters[c].criteria == 'clickedbroadcast' || filters[c].criteria == 'notclickedbroadcast') {
+
+                var stats = Stats.find({ event: 'clicked', broadcastId: filters[c].option }, { _id: 1 }).fetch();
+                filters[c].data = stats.map(function(a) {
+                    return a.subscriberId; });
+            }
+
         }
 
         // Filter with query
@@ -409,9 +430,40 @@ Meteor.methods({
                 }
 
             }
+
+            if (criteria == 'limit') {
+
+                var nbSubscribers = Subscribers.find({ listId: listId }).fetch().length;
+                var sampleSize = parseInt(parseInt(option) * nbSubscribers / 100);
+
+                if (sampleSize == 0) {
+                    sampleSize = 1;
+                }
+            }
+
+            if (criteria == 'received' || criteria == 'openedbroadcast' || criteria == 'clickedbroadcast') {
+
+                query._id = { $in: filters[f].data };
+
+            }
+
+            if (criteria == 'notreceived' || criteria == 'notopenedbroadcast' || criteria == 'notclickedbroadcast') {
+
+                query._id = { $nin: filters[f].data };
+
+            }
         }
 
-        var subscribers = Subscribers.find(query).fetch();
+        if (sampleSize) {
+            console.log('Using aggregate');
+            var subscribers = Subscribers.aggregate([{ $match: query }, { $sample: { size: sampleSize } }]);
+
+        } else {
+            var subscribers = Subscribers.find(query).fetch();
+
+        }
+
+        // console.log(subscribers);
 
         return subscribers;
 

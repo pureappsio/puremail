@@ -1,16 +1,5 @@
 Template.filters.rendered = function() {
 
-    // // Get lists
-    // var lists = Lists.find({}).fetch();
-
-    // // Set options
-    // for (i in lists) {
-    //     $('#select-option-0').append($('<option>', {
-    //         value: lists[i]._id,
-    //         text: lists[i].name
-    //     }));
-    // }
-
     Session.set('filterIndex', 1);
 }
 
@@ -145,7 +134,7 @@ Template.filters.events({
                 text: "not in a sequence"
             }));
 
-             $('#select-option-' + index).append($('<option>', {
+            $('#select-option-' + index).append($('<option>', {
                 value: 'inactive',
                 text: "inactive"
             }));
@@ -187,6 +176,36 @@ Template.filters.events({
 
         }
 
+        if (criteria == 'limit') {
+
+            $('#select-option-' + index).append($('<option>', {
+                value: '5',
+                text: "5%"
+            }));
+
+            $('#select-option-' + index).append($('<option>', {
+                value: '10',
+                text: "10%"
+            }));
+
+        }
+
+        if (criteria == 'received' || criteria == 'notreceived' || criteria == 'clickedbroadcast' || criteria == 'notclickedbroadcast' || criteria == 'openedbroadcast' || criteria == 'notopenedbroadcast') {
+
+
+            // Get broadcasts
+            var broadcasts = Broadcasts.find({ listId: listId }).fetch();
+
+            // Set options
+            for (i in broadcasts) {
+                $('#select-option-' + index).append($('<option>', {
+                    value: broadcasts[i]._id,
+                    text: broadcasts[i].subject
+                }));
+            }
+
+        }
+
     },
     'click #plus-filter': function() {
 
@@ -208,6 +227,13 @@ Template.filters.events({
         newFilter += "<option value='are'>are</option>";
         newFilter += "<option value='interested'>are interested in</option>";
         newFilter += "<option value='plan'>are in a plan</option>";
+        newFilter += "<option value='limit'>limit to</option>";
+        newFilter += "<option value='received'>received broadcast</option>";
+        newFilter += "<option value='notreceived'>didn't receive broadcast</option>";
+        newFilter += "<option value='openedbroadcast'>opened broadcast</option>";
+        newFilter += "<option value='notopenedbroadcast'>didn't open broadcast</option>";
+        newFilter += "<option value='clickedbroadcast'>clicked broadcast</option>";
+        newFilter += "<option value='notclickedbroadcast'>didn't click broadcast</option>";
         newFilter += "</select></div>";
         newFilter += '<div class="col-md-3"><select id="select-option-' + index + '" class="form-control"></select></div></div>';
 
