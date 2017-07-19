@@ -1,11 +1,13 @@
 <template name='rule'>
     <div class='row'>
         <div class='col-md-1'>
-            <button class='btn btn-default plus order-button'>+</button>
-            <button class='btn btn-default minus order-button'>-</button>
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button class='btn btn-secondary plus order-button'>+</button>
+                <button class='btn btn-secondary minus order-button'>-</button>
+            </div>
         </div>
         <div class='col-md-1'>{{order}}</div>
-        <div class='col-md-5'>{{emailName}} {{#if isConditional}}<span class="label label-primary">CONDITIONAL</span>{{/if}} {{#if isOffer}}<span class="label label-success">OFFER</span>{{/if}}
+        <div class='col-md-5'>{{emailName}} {{#if isConditional}}<span class="badge badge-primary">CONDITIONAL</span>{{/if}} {{#if isOffer}}<span class="badge badge-success">OFFER</span>{{/if}}
         </div>
         <div class='col-md-3'>Send email after {{time}} {{period}}</div>
         <div class='col-md-2'>

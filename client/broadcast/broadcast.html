@@ -41,11 +41,60 @@
     </div>
     <div class='row'>
         <div class='col-md-2'></div>
+        <div class='col-md-5'>
+            <select class='form-control' id="template-id">
+                {{#each templates}} {{> templateSelect}} {{/each}}
+            </select>
+        </div>
+        <div class='col-md-3'>
+            <button id='load-template' class='btn btn-primary btn-block'>Load Template</button>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-2'></div>
+        <div class='col-md-8'>
+            <h3>Tagging & Segmentation</h3>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-2'></div>
+        <div class='col-md-8'>
+            <select class='form-control' id='tagging'>
+                <option value="notagging">No subscribers tagging</option>
+                <option value="tagging">Tag links with subscriber ID</option>
+            </select>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-2'></div>
+        <div class='col-md-4'>
+            <label>Target Interest</label>
+            <select class='form-control' id='segmentation-interest'>
+                <option value="none">None</option>
+                {{#each interests}}{{> interestOptionSelect}}{{/each}}
+            </select>
+        </div>
+        <div class='col-md-4'>
+            <label>Target Sequence</label>
+            <select class='form-control' id='segmentation-sequence'>
+                {{#each sequences}}{{> interestOptionSelect}}{{/each}}
+            </select>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-2'></div>
+        <div class='col-md-8'>
+            {{purelink}}
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-2'></div>
         <div class='col-md-8'>
             {{#if noUserData}}
             <button id='send-email' class='btn btn-primary btn-block btn-lg disabled'>Send to subscribers</button>
             {{else}}
             <button id='send-email' class='btn btn-primary btn-block btn-lg'>Send to subscribers</button>
+            <div id='sent' class='indicator'>Sent!</div>
             {{/if}}
         </div>
     </div>

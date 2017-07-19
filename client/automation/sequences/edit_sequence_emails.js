@@ -12,9 +12,7 @@ Template.editSequenceEmails.helpers({
 Template.editSequenceEmails.rendered = function() {
 
     // Init editor
-    $('#email-text').summernote({
-        height: 300 // set editor height
-    });
+    CKEDITOR.replace('email-text');
 
     // Fill select parameter
     Meteor.call('getProducts', this.data.listId, function(err, products) {
@@ -84,7 +82,7 @@ Template.editSequenceEmails.events({
         var email = {
             emailName: $('#email-name').val(),
             emailSubject: $('#email-subject').val(),
-            emailText: $('#email-text').summernote('code'),
+            emailText: CKEDITOR.instances['email-text'].getData(),
             time: $('#select-time :selected').val(),
             period: $('#select-period :selected').val(),
             sequenceId: this._id,

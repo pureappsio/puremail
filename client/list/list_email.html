@@ -4,10 +4,12 @@
             <a href='{{pathFor "subscriberDetails"}}'>{{email}} <span class="flag-icon {{locationStyle}}"></span></a>
         </div>
         <div class='col-md-1'>
-            <span class="label {{originColor}}">{{originName}}</span>
+            <span class="badge {{originColor}}">{{originName}}</span>
         </div>
         <div class='col-md-4'>{{#each tags}}{{> interest}}{{/each}}</div>
-        <div class='col-md-2'><span class="label label-info">{{fromDate date_added}}</span></div>
-        <div class='col-md-1 delete'><span class="glyphicon glyphicon-remove glyph-delete" aria-hidden="true"></span></div>
+        <div class='col-md-2'><span class="badge badge-info">{{fromDate date_added}}</span></div>
+        <div class='col-md-1'>
+            <i class="fa fa-trash fa-delete delete" aria-hidden="true"></i>
+        </div>
     </div>
 </template>

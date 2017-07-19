@@ -120,7 +120,7 @@ Meteor.methods({
         var branchToSequence = false;
 
         // Conditions
-        conditions = Conditions.find({emailId: newEmail._id}).fetch();
+        conditions = Conditions.find({ emailId: newEmail._id }).fetch();
         console.log('Conditions: ');
         console.log(conditions);
 
@@ -308,7 +308,7 @@ Meteor.methods({
             var newEmail = Automations.findOne({ sequenceId: scheduled.sequenceId, order: order });
 
             // Conditional email ?
-            if (Conditions.findOne({emailId: newEmail._id})) {
+            if (Conditions.findOne({ emailId: newEmail._id })) {
 
                 // Plan conditional email
                 Meteor.call('addConditionalEmail', newEmail, subscriber);
@@ -353,18 +353,8 @@ Meteor.methods({
             // Get host
             host = Meteor.absoluteUrl();
 
-            // Add unsubscribe data
-            if (list.language) {
-                if (list.language == 'en') {
-                    unsubscribeText = "Unsubscribe";
-                }
-                if (list.language == 'fr') {
-                    unsubscribeText = "Se désinscrire";
-                }
-            } else {
-                unsubscribeText = "Unsubscribe";
-            }
-            scheduled.text += "<p><a style='color: gray;' href='" + host + "unsubscribe?s=" + subscriber._id + "'>" + unsubscribeText + "</a></p>";
+            // Add unsubscribe data & social tags
+            scheduled.text = Meteor.call('addEmailEnding', scheduled.text, list, 'automation', subscriber._id);
 
             // Send
             parameters = {
@@ -379,23 +369,32 @@ Meteor.methods({
 
                 console.log('Sending email to ' + scheduled.to + ' of list ' + list.name);
 
+                // Build query
+                var urlQuery = '?medium=email';
+                if (subscriber.origin) {
+                    urlQuery += '&origin=' + subscriber.origin;
+                }
+
                 // Check if subscriber has offers
                 if (Offers.findOne({ subscriberId: subscriber._id })) {
 
-                    // Load raw HTML
-                    $ = cheerio.load(scheduled.text);
-
-                    // Process links
-                    $('a').each(function(i, elem) {
-                        // Check if it's not the unsubscribe link
-                        if (($(elem)[0].attribs.href).indexOf('unsubscribe') == -1) {
-                            $(elem)[0].attribs.href += '?subscriber=' + subscriber._id;
-                        }
-                    });
-
-                    scheduled.text = $.html();
+                    urlQuery += '&subscriber=' + subscriber._id;
 
                 }
+
+                // Load raw HTML
+                $ = cheerio.load(scheduled.text);
+
+                // Process links
+                $('a').each(function(i, elem) {
+                    // Check if it's not the unsubscribe link
+                    if (($(elem)[0].attribs.href).indexOf('unsubscribe') == -1) {
+                        $(elem)[0].attribs.href += urlQuery;
+                    }
+                });
+
+                scheduled.text = $.html();
+
 
                 // Build mail
                 var helper = sendgridModule.mail;

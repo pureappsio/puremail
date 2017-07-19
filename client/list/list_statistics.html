@@ -1,8 +1,33 @@
 <template name='listStatistics'>
-
-<!-- <h3>Statistics for list: {{name}}</h3>
- -->
-<h3>Past Broadcast Emails for list: {{name}}</h3>
+    <h3>General Statistics for list: {{name}}</h3>
+    <div class='row'>
+        <div class='col-md-2'></div>
+        <div class='col-md-4 col-centered'>
+            <div>Open Rate</div>
+            <div class='indicator-title'>{{openRate}}%</div>
+        </div>
+        <div class='col-md-4 col-centered'>
+            <div>Click Rate</div>
+            <div class='indicator-title'>{{clickRate}}%</div>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-6 col-center'>
+            <canvas id='subscribers-chart'></canvas>
+        </div>
+        <div class='col-md-3 col-center'></div>
+        <div class='col-md-3 col-center'>
+            <canvas id='interests-chart'></canvas>
+        </div>
+    </div>
+    <h3>Automation Statistics</h3>
+    <div class='row row-title'>
+        <div class='col-md-4'>Sequence</div>
+        <div class='col-md-2 col-centered'>Open Rate</div>
+        <div class='col-md-2 col-centered'>Click Rate</div>
+    </div>
+    {{#each sequences}} {{> sequenceStats}} {{/each}}
+    <h3>Past Broadcast Emails for list: {{name}}</h3>
 
 <div class='row row-title'>
 
@@ -17,7 +42,7 @@
   {{> broadcastDetails}}
 {{/each}}
 
-<!-- <div class='row row-title'>
+    <!-- <div class='row row-title'>
 
   <div class='col-md-1'>Sequence</div>
   <div class='col-md-3'>Email Subject</div>
@@ -30,5 +55,4 @@
 {{#each getRules}}
   {{> ruleStatistics}}
 {{/each}} -->
-
 </template>

@@ -30,44 +30,36 @@ Template.listEmail.helpers({
     },
     originName: function() {
         if (this.origin) {
-            
+
             if (this.origin == 'blog' || this.origin == 'organic') {
                 return 'ORGANIC';
-            }
-            else if (this.origin == 'landing') {
+            } else if (this.origin == 'ads') {
                 return 'ADS';
-            }
-            else if (this.origin == 'social') {
+            } else if (this.origin == 'social') {
                 return 'SOCIAL';
-            }
-            else {
+            } else {
                 return 'ORGANIC';
             }
 
-        }
-        else {
+        } else {
             return 'ORGANIC';
         }
     },
     originColor: function() {
         if (this.origin) {
-            
+
             if (this.origin == 'blog' || this.origin == 'organic') {
-                return 'label-warning';
-            }
-            else if (this.origin == 'landing') {
-                return 'label-primary';
-            }
-            else if (this.origin == 'social') {
-                return 'label-info';
-            }
-            else {
-                return 'label-warning';
+                return 'badge-warning';
+            } else if (this.origin == 'landing') {
+                return 'badge-primary';
+            } else if (this.origin == 'social') {
+                return 'badge-info';
+            } else {
+                return 'badge-warning';
             }
 
-        }
-        else {
-            return 'label-warning';
+        } else {
+            return 'badge-warning';
         }
     },
     isNotConfirmed: function() {
@@ -89,7 +81,7 @@ Template.listEmail.helpers({
     },
     tags: function() {
         if (this.tags) {
-            return Interests.find({ _id : { $in : this.tags } });
+            return Interests.find({ _id: { $in: this.tags } });
         }
     }
 });

@@ -2,6 +2,8 @@
 import sendgridModule from 'sendgrid';
 const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
+var cheerio = Npm.require("cheerio");
+
 Meteor.methods({
 
     reSendBroadcasts: function() {
@@ -106,18 +108,28 @@ Meteor.methods({
         // Get host
         host = Meteor.absoluteUrl();
 
-        // Add unsubscribe data
-        if (list.language) {
-            if (list.language == 'en') {
-                var unsubscribeText = "Unsubscribe";
-            }
-            if (list.language == 'fr') {
-                var unsubscribeText = "Se désinscrire";
-            }
-        } else {
-            var unsubscribeText = "Unsubscribe";
+        if (scheduled.tagging == 'tagging') {
+
+            // Add substitions if tagging is enabled
+            $ = cheerio.load(scheduled.text);
+
+            // Process links
+            $('a').each(function(i, elem) {
+                // Check if it's not the unsubscribe link
+                if (($(elem)[0].attribs.href).indexOf('unsubscribe') == -1) {
+                    $(elem)[0].attribs.href += '&subscriber=-subscriberId-';
+                }
+            });
+
+            scheduled.text = $.html();
+
+            console.log('Tagging done');
+
         }
-        scheduled.text += "<p><a style='color: gray;' href='" + host + "unsubscribe?s=-subscriberId-'>" + unsubscribeText + "</a></p>";
+
+        scheduled.text = Meteor.call('addEmailEnding', scheduled.text, list, 'broadcast');
+
+        console.log(scheduled.text);
 
         // Split for API
         var apiLimit = 500;
@@ -227,7 +239,6 @@ Meteor.methods({
 
         // Make entry
         entry = {
-
             name: list.userName,
             ownerId: Meteor.user()._id,
             listId: broadcast.listId,
@@ -238,7 +249,8 @@ Meteor.methods({
             text: broadcast.text,
             type: 'broadcast',
             broadcastId: broadcastId,
-            recipients: broadcast.recipients
+            recipients: broadcast.recipients,
+            tagging: broadcast.tagging
         };
         Scheduled.insert(entry);
 
@@ -284,6 +296,25 @@ Meteor.methods({
 
             }
 
+            if (filters[c].criteria == 'notboughtsince') {
+
+                // Get date
+                var date = filters[c].option;
+                var now = new Date();
+                if (date == 'oneweek') {
+                    var purchaseDate = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+                }
+                if (date == 'twoweeks') {
+                    var purchaseDate = new Date(now.getTime() - 14 * 24 * 3600 * 1000);
+                }
+                if (date == 'onemonth') {
+                    var purchaseDate = new Date(now.getTime() - 30.5 * 24 * 3600 * 1000);
+                }
+
+                filters[c].data = Meteor.call('getCustomersPurchaseDate', purchaseDate, listId);
+
+            }
+
             if (filters[c].option == 'customers' || filters[c].option == 'notcustomers') {
 
                 filters[c].data = Meteor.call('getCustomersEmails', listId);
@@ -293,21 +324,24 @@ Meteor.methods({
 
                 var stats = Stats.find({ event: 'delivered', broadcastId: filters[c].option }, { _id: 1 }).fetch();
                 filters[c].data = stats.map(function(a) {
-                    return a.subscriberId; });
+                    return a.subscriberId;
+                });
             }
 
             if (filters[c].criteria == 'openedbroadcast' || filters[c].criteria == 'notopenedbroadcast') {
 
                 var stats = Stats.find({ event: 'opened', broadcastId: filters[c].option }, { _id: 1 }).fetch();
                 filters[c].data = stats.map(function(a) {
-                    return a.subscriberId; });
+                    return a.subscriberId;
+                });
             }
 
             if (filters[c].criteria == 'clickedbroadcast' || filters[c].criteria == 'notclickedbroadcast') {
 
                 var stats = Stats.find({ event: 'clicked', broadcastId: filters[c].option }, { _id: 1 }).fetch();
                 filters[c].data = stats.map(function(a) {
-                    return a.subscriberId; });
+                    return a.subscriberId;
+                });
             }
 
         }
@@ -361,6 +395,12 @@ Meteor.methods({
                 query.email = { $nin: filters[f].data };
             }
 
+            if (criteria == 'notboughtsince') {
+
+                query.email = { $in: filters[f].data };
+
+            }
+
             if (criteria == 'are') {
 
 
@@ -393,8 +433,8 @@ Meteor.methods({
                     var now = new Date();
                     var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-                    query.lastClick = { $lt: filters[f].data };
-                    query.lastOpen = { $lt: filters[f].data };
+                    query.lastClick = { $lt: delay };
+                    query.lastOpen = { $lt: delay };
 
                 }
 
@@ -403,8 +443,8 @@ Meteor.methods({
                     var now = new Date();
                     var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-                    query.lastClick = { $gte: filters[f].data };
-                    query.lastOpen = { $gte: filters[f].data };
+                    // query.lastClick = { $gte: delay };
+                    query.lastOpen = { $gte: delay };
 
                 }
 
@@ -463,7 +503,7 @@ Meteor.methods({
 
         }
 
-        // console.log(subscribers);
+        console.log(query);
 
         return subscribers;
 

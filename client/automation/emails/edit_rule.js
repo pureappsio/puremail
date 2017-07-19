@@ -43,10 +43,9 @@ Template.editRule.rendered = function() {
 
     // Init editor
     var emailText = emailData.emailText;
-    $('#email-text').summernote({
-        height: 300
-    });
-    $('#email-text').summernote('code', emailText);
+
+    CKEDITOR.replace('email-text');
+    CKEDITOR.instances['email-text'].setData(emailText);
 
     // Init time
     $('#select-time').val(emailData.time);
@@ -95,18 +94,12 @@ Template.editRule.events({
         Meteor.call('addCondition', condition);
 
     },
-
-    // 'click #add-offer': function() {
-
-    //     Meteor.call('addOffer', offer);
-
-    // },
     'click #update': function() {
 
         // Get elements
         var email = {
             _id: this._id,
-            emailText: $('#email-text').summernote('code'),
+            emailText: CKEDITOR.instances['email-text'].getData(),
             emailSubject: $('#email-subject').val(),
             emailName: $('#email-name').val(),
             time: $('#select-time :selected').val(),
@@ -122,20 +115,6 @@ Template.editRule.events({
         } else {
             email.useOffer = false;
         }
-
-        // // Conditions ?
-        // if (conditionsIndex > 0) {
-        //     conditions = [];
-        //     for (j = 0; j < conditionsIndex; j++) {
-        //         condition = {
-        //             criteria: $('#select-criteria-' + j + ' :selected').val(),
-        //             parameter: $('#select-parameter-' + j + ' :selected').val()
-        //         }
-        //         conditions.push(condition);
-        //     }
-        //     email.branchDestination = $('#select-destination :selected').val();
-        //     email.conditions = conditions;
-        // }
 
         // Update
         Meteor.call('updateRule', email);

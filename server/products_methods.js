@@ -30,6 +30,38 @@ Meteor.methods({
         }
 
     },
+    getCustomersPurchaseDate: function(purchaseDate, listId) {
+
+        // Get integration
+        if (Integrations.findOne({ type: 'purecart', listId: listId })) {
+
+            // Get integration
+            var integration = Integrations.findOne({ type: 'purecart', listId: listId });
+
+            // Get customers
+            var url = "https://" + integration.url + "/api/customers?key=" + integration.key;
+            url += "&lastpurchase=" + purchaseDate;
+
+            console.log(url);
+
+            var answer = HTTP.get(url);
+            if (answer.data.customers) {
+                var customersEmails = [];
+
+                for (d in answer.data.customers) {
+
+                    customersEmails.push(answer.data.customers[d].email);
+
+                }
+
+                return customersEmails;
+            } else {
+                return [];
+            }
+
+        }
+
+    },
     getCustomersProduct: function(productId, listId) {
 
         // Get integration

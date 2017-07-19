@@ -35,12 +35,27 @@ Template.list.helpers({
         if (this.userName) {
             return this.userName;
         }
+    },
+    socialNetworks: function() {
+        return Networks.find({ listId: this._id });
     }
 
 });
 
 Template.list.events({
 
+    'click #add-network': function() {
+
+        var network = {
+            type: $('#social-network-type :selected').val(),
+            url: $('#social-network-url').val(),
+            listId: this._id,
+            ownerId: Meteor.user()._id
+        }
+
+        Meteor.call('addSocialNetwork', network);
+
+    },
     'click #set-brand': function() {
 
         Meteor.call('setBrand', this._id, $('#brand-name').val(), $('#brand-email').val(), $('#your-name').val());

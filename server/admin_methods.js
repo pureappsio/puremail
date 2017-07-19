@@ -1,5 +1,77 @@
 Meteor.methods({
 
+    addSocialNetwork: function(network) {
+
+        console.log(network);
+        Networks.insert(network);
+
+    },
+    deleteSocialNetwork: function(networkId) {
+
+        Networks.remove(networkId);
+
+    },
+    deleteUser(userId) {
+
+        Meteor.users.remove(userId);
+
+    },
+    updateSubscribers: function() {
+
+        Subscribers.update({ origin: 'blog' }, { $set: { origin: 'organic' } }, { multi: true });
+        Subscribers.update({ origin: 'landing' }, { $set: { origin: 'ads' } }, { multi: true });
+
+    },
+    createUsers: function() {
+
+        // Create admin user
+        var adminUser = {
+            email: Meteor.settings.adminUser.email,
+            password: Meteor.settings.adminUser.password,
+            role: 'admin'
+        }
+        Meteor.call('createUserAccount', adminUser);
+
+    },
+    signupUser: function(data) {
+
+        if (Meteor.settings.disableSignup) {
+            console.log('User signup blocked');
+        } else {
+            Meteor.call('createUserAccount', data);
+        }
+
+    },
+    createUserAccount: function(data) {
+
+        console.log(data);
+
+        // Check if exist
+        if (Meteor.users.findOne({ "emails.0.address": data.email })) {
+
+            console.log('Updating existing user');
+            var userId = Meteor.users.findOne({ "emails.0.address": data.email })._id;
+            Meteor.users.update(userId, { $set: { role: data.role } });
+
+        } else {
+
+            console.log('Creating new user');
+
+            // Create
+            var userId = Accounts.createUser({
+                email: data.email,
+                password: data.password
+            });
+
+            // Assign role 
+            Meteor.users.update(userId, { $set: { role: data.role } });
+
+        }
+
+        return userId;
+
+    },
+
     generateEmails: function() {
 
         var listId = 'zrQfvpiEn9RHMK5SK';

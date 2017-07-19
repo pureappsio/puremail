@@ -16,6 +16,11 @@ Template.filters.helpers({
 
 Template.filters.events({
 
+    'change #list, click #list': function() {
+
+        Session.set('selectedList', $('#list :selected').val());
+
+    },
     'change .select-criteria': function(event, template) {
 
         // Get ID
@@ -91,6 +96,21 @@ Template.filters.events({
                 }));
             }
 
+        }
+
+        if (criteria == 'notboughtsince') {
+
+            $('#select-option-' + index).append(
+                $('<option>', { value: 'oneweek', text: "one week" })
+            );
+
+            $('#select-option-' + index).append(
+                $('<option>', { value: 'twoweeks', text: "two weeks" })
+            );
+
+            $('#select-option-' + index).append(
+                $('<option>', { value: 'onemonth', text: "one month" })
+            );
         }
 
         if (criteria == 'boughtproduct' || criteria == 'notboughtproduct') {
@@ -224,6 +244,7 @@ Template.filters.events({
         newFilter += "<option value='boughtless'>bought less than</option>";
         newFilter += "<option value='boughtproduct'>bought</option>";
         newFilter += "<option value='notboughtproduct'>didn't buy</option>";
+        newFilter += "<option value='notboughtsince'>didn't buy since</option>";
         newFilter += "<option value='are'>are</option>";
         newFilter += "<option value='interested'>are interested in</option>";
         newFilter += "<option value='plan'>are in a plan</option>";

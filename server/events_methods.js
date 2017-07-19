@@ -119,7 +119,8 @@ Meteor.methods({
                     var stat = {
                         date: new Date(),
                         subscriberId: events[i].subscriberId,
-                        ownerId: subscriber.ownerId
+                        ownerId: subscriber.ownerId,
+                        listId: subscriber.listId
                     }
 
                     if (subscriber.origin) {

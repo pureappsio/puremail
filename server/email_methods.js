@@ -4,6 +4,52 @@ const sendgrid = require('sendgrid')(Meteor.settings.sendGridAPIKey);
 
 Meteor.methods({
 
+    addEmailEnding: function(text, list, type, subscriberId) {
+
+        // Get host
+        host = Meteor.absoluteUrl();
+
+        // Add social networks if any
+        if (Networks.findOne({ listId: list._id, ownerId: list.ownerId })) {
+
+            var networks = Networks.find({ listId: list._id, ownerId: list.ownerId }).fetch();
+            var networksText = "<p style='font-size: 14px; text-align: center; margin-top: 50px;'>Follow us on social media!</p><p style='text-align: center;'>";
+
+            for (i in networks) {
+
+                var imageLink = Meteor.absoluteUrl() + networks[i].type;
+                var imageText = "<img height='32' width='32' src='" + imageLink + ".png'>";
+                networksText += "<a style='margin-right: 5px; margin-left: 5px;' href='" + networks[i].url + "'>" + imageText + "</a>";
+
+            }
+
+            networksText += '</p>';
+
+            text += networksText
+
+        }
+
+        // Add unsubscribe data
+        if (list.language) {
+            if (list.language == 'en') {
+                var unsubscribeText = "Unsubscribe";
+            }
+            if (list.language == 'fr') {
+                var unsubscribeText = "Se désinscrire";
+            }
+        } else {
+            var unsubscribeText = "Unsubscribe";
+        }
+        if (type == 'broadcast' || type == 'test') {
+            text += "<p style='margin-top: 30px; text-align: center;'><a style='color: gray;' href='" + host + "unsubscribe?s=-subscriberId-'>" + unsubscribeText + "</a></p>";
+        }
+        if (type == 'automation') {
+            text += "<p style='margin-top: 30px; text-align: center;'><a style='color: gray;' href='" + host + "unsubscribe?s=" + subscriberId + "'>" + unsubscribeText + "</a></p>";
+        }
+
+        return text;
+
+    },
     sendSimpleEmail: function(scheduled) {
 
         // Build mail
@@ -109,6 +155,9 @@ Meteor.methods({
         console.log('Sending test email to: ' + testEmailData.to);
         console.log('For list: ' + listId);
 
+        // Get list
+        list = Lists.findOne(listId);
+
         // Get host
         host = Meteor.absoluteUrl();
 
@@ -116,10 +165,7 @@ Meteor.methods({
         testEmailData.html = '<div style="font-size: 16px;">' + testEmailData.html + '</div>';
 
         // Add unsubscribe data
-        testEmailData.html += "<p><a style='color: gray;' href='" + host + "unsubscribe?s='>Unsubscribe</a></p>";
-
-        // Get list
-        list = Lists.findOne(listId);
+        testEmailData.html = Meteor.call('addEmailEnding', testEmailData.html, list);
 
         testEmailData.unique_args = {
             'testArg': 'justatest'

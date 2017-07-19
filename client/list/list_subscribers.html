@@ -1,61 +1,40 @@
 <template name='listSubscribers'>
-
-<h3>List Name: {{name}}</h3>
-
-<div class='row'>
-
-  <div class='col-md-3'>ID: {{getListId}}</div>
-  <div class='col-md-3'>Total subscribers: {{totalSubscribers}}</div>
-<!--   <div class='col-md-3'>Customers/Total: {{percentageCustomers}}%</div>
+    <h3>List Name: {{name}}</h3>
+    <div class='row'>
+        <div class='col-md-3'>ID: {{getListId}}</div>
+        <div class='col-md-3'>Total subscribers: {{totalSubscribers}}</div>
+        <!--   <div class='col-md-3'>Customers/Total: {{percentageCustomers}}%</div>
   <div class='col-md-3'>In Sequence/Total: {{percentageSequence}}%</div> -->
-
-</div>
-
-<div class='row'>
-
-  <div class='col-md-3'>
-    <input type='text' class='form-control' id='subscriber-email' placeholder='Subscriber email...'>
-  </div>
-  <div class='col-md-6'>
-    {{#each interests}}
-      {{> interestChoice}}
-    {{/each}}
-  </div>
-  <div class='col-md-3'>
-    <button id='add-subscriber' class='btn btn-block btn-primary'>Add Subscriber</button>
-  </div>
-
-</div>
-
-<div class='row'>
-
-  <div class='col-md-3'>
-    <input type='text' class='form-control' id='find-subscriber-email' placeholder='Subscriber email...'>
-  </div>
-  <div class='col-md-3'>
-    <button id='find-subscriber' class='btn btn-block btn-success'>Find Subscriber</button>
-  </div>
-  <div class='col-md-3'>
-    <button id='show-all' class='btn btn-block btn-default'>Show All Subscribers</button>
-  </div>
-
-
-</div>
-
-{{#each subscribers}}
-  {{> listEmail}}
-{{/each}}
-
-<div class='row'>
-
-  <div class='col-md-4'></div>
-  <div class='col-md-4'>
-    <button id='remove-subscribers' class='btn btn-lg btn-block btn-danger'>Delete All Subscribers</button>
-  </div>
-  <div class='col-md-4'></div>
-
-</div>
-
-<div class='row'></div>
-
+    </div>
+    <div class='row'>
+        <div class='col-md-3'>
+            <input type='text' class='form-control' id='subscriber-email' placeholder='Subscriber email...'>
+        </div>
+        <div class='col-md-6'>
+            {{#each interests}} {{> interestChoice}} {{/each}}
+        </div>
+        <div class='col-md-3'>
+            <button id='add-subscriber' class='btn btn-block btn-primary'>Add Subscriber</button>
+        </div>
+    </div>
+    <div class='row'>
+        <div class='col-md-3'>
+            <input type='text' class='form-control' id='find-subscriber-email' placeholder='Subscriber email...'>
+        </div>
+        <div class='col-md-3'>
+            <button id='find-subscriber' class='btn btn-block btn-success'>Find Subscriber</button>
+        </div>
+        <div class='col-md-3'>
+            <button id='show-all' class='btn btn-block btn-secondary'>Show All Subscribers</button>
+        </div>
+    </div>
+    {{#each subscribers}} {{> listEmail}} {{/each}}
+    <div class='row'>
+        <div class='col-md-4'></div>
+        <div class='col-md-4'>
+            <button id='remove-subscribers' class='btn btn-lg btn-block btn-danger'>Delete All Subscribers</button>
+        </div>
+        <div class='col-md-4'></div>
+    </div>
+    <div class='row'></div>
 </template>

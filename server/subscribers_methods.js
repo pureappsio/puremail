@@ -18,7 +18,18 @@ Meteor.methods({
         return country_code;
 
     },
+    getUserIp: function(httpHeaders) {
 
+        var ip;
+        if (httpHeaders['cf-connecting-ip']) {
+            ip = httpHeaders['cf-connecting-ip'];
+        } else {
+            ip = httpHeaders['x-forwarded-for'];
+        }
+
+        return ip;
+
+    },
     getSubscribers: function(query) {
         return Subscribers.find(query).fetch();
     },
@@ -333,6 +344,10 @@ Meteor.methods({
 
         if (data.location) {
             subscriber.location = data.location;
+        }
+
+        if (data.ip) {
+            subscriber.ip = data.ip;
         }
 
         if (data.sequence) {
@@ -654,10 +669,15 @@ Meteor.methods({
         }
 
     },
-    wakeUpDyingLeads: function() {
+    deleteDeadLeads: function() {
 
         // Get  all users
         var users = Meteor.users.find({}).fetch();
+
+        // Delay
+        var now = new Date();
+        var delay = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        console.log(delay);
 
         // Go through all users
         for (u = 0; u < users.length; u++) {
@@ -668,36 +688,101 @@ Meteor.methods({
             // Go through all lists
             for (l = 0; l < lists.length; l++) {
 
+                var query = {
+
+                    listId: lists[l]._id,
+                    sequenceId: null,
+                    inactive: true,
+                    last_updated: { $lt: delay }
+                }
+
+                var subscribers = Subscribers.find(query).fetch();
+                console.log('List ' + lists[l].name + ' has ' + subscribers.length + ' subscribers to delete');
+
+                // Delete them
+                Subscribers.remove(query);
+
+            }
+
+        }
+
+    },
+    wakeUpDyingLeads: function() {
+
+        // Get  all users
+        var users = Meteor.users.find({}).fetch();
+
+        // Delay
+        var now = new Date();
+        var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+        // Go through all users
+        for (u = 0; u < users.length; u++) {
+
+            // Get all lists from user
+            var lists = Lists.find({ ownerId: users[u]._id }).fetch();
+
+            // Go through all lists
+            for (l = 0; l < lists.length; l++) {
+
+                // Query
+                var query = {
+                    $or: [{
+                        date_added: { $lt: delay },
+                        lastClick: { $lt: delay },
+                        lastOpen: { $lt: delay },
+                        listId: lists[l]._id,
+                        sequenceId: null,
+                        inactive: { $ne: true }
+                    }, {
+                        date_added: { $lt: delay },
+                        lastClick: { $exists: false },
+                        lastOpen: { $lt: delay },
+                        listId: lists[l]._id,
+                        sequenceId: null,
+                        inactive: { $ne: true }
+                    }, {
+                        date_added: { $lt: delay },
+                        lastClick: { $exists: false },
+                        lastOpen: { $exists: false },
+                        listId: lists[l]._id,
+                        sequenceId: null,
+                        inactive: { $ne: true }
+                    }]
+                };
+
+                var subscribers = Subscribers.find(query).fetch();
+                console.log('List ' + lists[l].name + ' has ' + subscribers.length + ' inactive subscribers not yet marked');
+
                 // Check if list has a wake up sequence
-                if (Sequences.findOne({ listId: lists[l]._id, trigger: "dying" })) {
+                if (Sequences.findOne({ listId: lists[l]._id, type: "wake" })) {
 
                     // Get sequence
-                    var sequence = Sequences.findOne({ listId: lists[l]._id, trigger: "dying" })
+                    var sequence = Sequences.findOne({ listId: lists[l]._id, type: "wake" })
 
                     // Get email
                     var newEmail = Automations.findOne({ sequenceId: sequence._id, order: 1 });
 
-                    // Find all subscribers for this list
-                    var subscribers = Subscribers.find({ listId: lists[l]._id }).fetch();
+                    for (s in subscribers) {
 
-                    // Find all subscribers that are inactive
-                    for (s = 0; s < subscribers.length; s++) {
+                        console.log('Waking up subscriber ' + subscribers[s].email);
 
-                        // Check if subscriber is inactive
-                        if (Meteor.call('isInactive', subscribers[s])) {
+                        // Set as inactive
+                        Subscribers.update(subscribers[s]._id, { $set: { "inactive": true } });
+                        Subscribers.update(subscribers[s]._id, { $set: { "last_updated": new Date() } });
 
-                            // Assign the wake up sequence
-                            Subscribers.update(subscribers[s]._id, { $set: { "sequenceEmail": newEmail._id } });
-                            Subscribers.update(subscribers[s]._id, { $set: { "sequenceId": sequence._id } });
+                        // Assign the wake up sequence
+                        Subscribers.update(subscribers[s]._id, { $set: { "sequenceEmail": newEmail._id } });
+                        Subscribers.update(subscribers[s]._id, { $set: { "sequenceId": sequence._id } });
 
-                            // Send first email
-                            Meteor.call('addAutomationEmail', newEmail, subscribers[s], lists[l], users[u]);
-
-                        }
-
+                        // Send first email
+                        Meteor.call('addAutomationEmail', newEmail, subscribers[s], lists[l], users[u]);
                     }
 
                 }
+
+                var subscribers = Subscribers.find({ listId: lists[l]._id, inactive: true }).fetch();
+                console.log('List ' + lists[l].name + ' has ' + subscribers.length + ' subscribers marked as inactive');
 
             }
 

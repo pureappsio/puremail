@@ -1,62 +1,62 @@
 Template.rule.events({
 
-  'click .delete-rule': function (event, template) {
+    'click .delete-rule': function(event, template) {
 
-    Meteor.call('deleteRule', template.data._id);
+        Meteor.call('deleteRule', template.data._id);
 
-  },
-  'click .plus': function (event, template) {
+    },
+    'click .plus': function(event, template) {
 
-    Meteor.call('changeEmailOrder', template.data, 1);
+        Meteor.call('changeEmailOrder', template.data, 1);
 
-  },
-  'click .minus': function (event, template) {
+    },
+    'click .minus': function(event, template) {
 
-    Meteor.call('changeEmailOrder', template.data, -1);
+        Meteor.call('changeEmailOrder', template.data, -1);
 
-  }
+    }
 
 });
 
 Template.rule.helpers({
 
-  isOffer: function() {
-    if (this.useOffer) {
-      return true;
-    }
-  },
-  isConditional: function() {
-    if (Conditions.findOne({emailId: this._id})) {
-      return true;
-    }
-  },
-  sequenceName: function() {
-    return Sequences.findOne(this.sequenceId).name;
-  },
-  generateDescription: function() {
-
-    var description = "";
-    if (this.triggers) {
-
-      for (i = 0; i < this.triggers.length; i++) {
-
-        trigger = this.triggers[i];
-
-        if (trigger.criteria == 'subscribed') {
-          list = Lists.findOne(trigger.option);
-          description += 'For people who subscribed to ' + list.name;
+    isOffer: function() {
+        if (this.useOffer) {
+            return true;
         }
-        if (trigger.criteria == 'interest') {
-          description += ' and are interested in ' + trigger.option;
+    },
+    isConditional: function() {
+        if (Conditions.findOne({ emailId: this._id })) {
+            return true;
         }
-        if (trigger.criteria == 'origin') {
-          description += ' and are coming from ' + trigger.option;
-        }
+    },
+    sequenceName: function() {
+        return Sequences.findOne(this.sequenceId).name;
+    },
+    generateDescription: function() {
 
-      }
+        var description = "";
+        if (this.triggers) {
+
+            for (i = 0; i < this.triggers.length; i++) {
+
+                trigger = this.triggers[i];
+
+                if (trigger.criteria == 'subscribed') {
+                    list = Lists.findOne(trigger.option);
+                    description += 'For people who subscribed to ' + list.name;
+                }
+                if (trigger.criteria == 'interest') {
+                    description += ' and are interested in ' + trigger.option;
+                }
+                if (trigger.criteria == 'origin') {
+                    description += ' and are coming from ' + trigger.option;
+                }
+
+            }
+        }
+        return description;
+
     }
-    return description;
-
-  }
 
 });

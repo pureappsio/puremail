@@ -67,6 +67,25 @@
         </div>
         <div class="col-md-3">Current language: {{language}}</div>
     </div>
+    <h3>Social Networks</h3>
+    <div class='row'>
+        <div class="col-md-3">
+            <select class='form-control' id='social-network-type'>
+                <option value='facebook'>Facebook</option>
+                <option value='twitter'>Twitter</option>
+                <option value='youtube'>Youtube</option>
+                <option value='pinterest'>Pinterest</option>
+                <option value='instagram'>Instagram</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type='text' id='social-network-url' placeholder="URL of social network account ..." class="form-control">
+        </div>
+        <div class="col-md-3">
+            <button id='add-network' class='btn btn-primary'>Add Social Network to List</button>
+        </div>
+    </div>
+    {{#each socialNetworks}} {{> networkListing}} {{/each}}
     <h3>Options</h3>
     <div class='row'>
         <div class="col-md-5">

@@ -1,5 +1,9 @@
 <template name='subscriberDetails'>
-    <h3>General Details</h3>
+    <div class='row'>
+        <div class='col-md-3'>
+            <h3>General Details</h3>
+        </div>
+    </div>
     <div class='row'>
         <div class='col-md-3'>Subscriber email:</div>
         <div class='col-md-3'>{{subscriber.email}}</div>
@@ -44,8 +48,14 @@
     <div class='row'>
         <div class='col-md-3'>Status:</div>
         <div class='col-md-3'>{{subscriber.status}}</div>
+        <div class='col-md-3'>Activity:</div>
+        <div class='col-md-3'><span class="badge badge-{{activityStatus}}">{{activity}}</span></div>
     </div>
-    <h3>Sequences</h3>
+    <div class='row'>
+        <div class='col-md-3'>
+            <h3>Sequences</h3>
+        </div>
+    </div>
     <div class='row'>
         <div class='col-md-3'>Current sequence:</div>
         <div class='col-md-3'>{{sequenceName}}</div>

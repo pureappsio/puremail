@@ -1,64 +1,55 @@
 <template name="header">
-  <nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/">PureMail {{demoIndicator}}</a>
-    </div>
-
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        {{#if currentUser}}
-
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Build <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{{pathFor 'lists'}}">Lists</a></li>
-            <li><a href="{{pathFor 'generator'}}">Opt-In Generator</a></li>
-          </ul>
-        </li>
-
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Send <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{{pathFor 'broadcast'}}">Broadcast</a></li>
-            <li><a href="{{pathFor 'addToSequence'}}">Add to Sequence</a></li>
-            <li><a href="{{pathFor 'scheduled'}}">Scheduled</a></li>
-          </ul>
-        </li>
-
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Reports <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="{{pathFor 'analytics'}}">Analytics</a></li>
-            <li><a href="{{pathFor 'listsReport'}}">Lists</a></li>
-            <li><a href="{{pathFor 'usage'}}">Usage</a></li>
-          </ul>
-        </li>
-        {{/if}}
-      </ul>
-
-   	  <ul class="nav navbar-nav navbar-right login">
-        {{> loginButtons}}
-      </ul>
-
-      <ul class="nav navbar-nav navbar-right">
-        {{#if isAdmin}}
-        <li><a href="{{pathFor 'admin'}}">Admin</a></li>
-        {{/if}}
-        {{#if currentUser}}
-        <li><a href="{{pathFor 'settings'}}">Settings</a></li>
-        {{/if}}
-      </ul>
-
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
+    <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">
+            <div class='site-title'>PureMail {{demoIndicator}}</div>
+        </a>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                {{#if currentUser}}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Build</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="{{pathFor 'lists'}}">Lists</a>
+                        <a class="dropdown-item" href="{{pathFor 'emailTemplates'}}">Templates</a>
+                        <a class="dropdown-item" href="{{pathFor 'generator'}}">Opt-In Generator</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Send</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="{{pathFor 'broadcast'}}">Broadcast</a>
+                        <a class="dropdown-item" href="{{pathFor 'addToSequence'}}">Add to Sequence</a>
+                        <a class="dropdown-item" href="{{pathFor 'scheduled'}}">Scheduled</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Reports</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="{{pathFor 'analytics'}}">Analytics</a>
+                        <a class="dropdown-item" href="{{pathFor 'listsReport'}}">Lists</a>
+                        <a class="dropdown-item" href="{{pathFor 'usage'}}">Usage</a>
+                    </div>
+                </li>
+                {{/if}}
+            </ul>
+            <ul class="navbar-nav">
+                {{#if isAdmin}}
+                <li class="nav-item"><a class="nav-link" href="{{pathFor 'settings'}}">Settings</a></li>{{/if}} {{#if isAdmin}}
+                <li class="nav-item"><a class="nav-link" href="{{pathFor 'admin'}}">Admin</a></li>
+                {{/if}} {{#if currentUser}}
+                <li class="nav-item">
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{email}}</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a id='log-out' class="dropdown-item" href="/">Log Out</a>
+                    </div>
+                </li>
+                {{/if}}
+            </ul>
+        </div>
+    </nav>
 </template>

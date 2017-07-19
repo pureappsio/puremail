@@ -86,6 +86,68 @@ Template.subscriberDetails.events({
 
 Template.subscriberDetails.helpers({
 
+    activity: function() {
+
+        var now = new Date();
+        var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+        var date_added = new Date(Session.get('subscriberData').date_added);
+
+        if (date_added.getTime() > delay.getTime()) {
+            return 'ACTIVE';
+        } else {
+
+            if (Session.get('subscriberData').lastOpen) {
+
+                if (Session.get('subscriberData').lastClick) {
+
+                    var lastClick = new Date(Session.get('subscriberData').lastClick);
+                    var lastOpen = new Date(Session.get('subscriberData').lastOpen);
+
+                    if ((lastClick.getTime() > delay.getTime()) && (lastOpen.getTime() > delay.getTime())) {
+                        return 'ACTIVE';
+                    }
+                } else {
+                    return 'INACTIVE';
+                }
+
+            } else {
+                return 'INACTIVE';
+            }
+
+        }
+
+    },
+    activityStatus: function() {
+
+        var now = new Date();
+        var delay = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+        var date_added = new Date(Session.get('subscriberData').date_added);
+
+        if (date_added.getTime() > delay.getTime()) {
+            return 'success';
+        } else {
+
+            if (Session.get('subscriberData').lastOpen) {
+
+                if (Session.get('subscriberData').lastClick) {
+
+                    var lastClick = new Date(Session.get('subscriberData').lastClick);
+                    var lastOpen = new Date(Session.get('subscriberData').lastOpen);
+
+                    if ((lastClick.getTime() > delay.getTime()) && (lastOpen.getTime() > delay.getTime())) {
+                        return 'success';
+                    }
+                } else {
+                    return 'danger';
+                }
+
+            } else {
+                return 'danger';
+            }
+
+        }
+
+    },
     tags: function() {
         if (Session.get('subscriberData').tags) {
             return Interests.find({ _id: { $in: Session.get('subscriberData').tags } });
